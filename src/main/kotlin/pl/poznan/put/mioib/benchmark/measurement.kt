@@ -1,7 +1,6 @@
 package pl.poznan.put.mioib.benchmark
 
 import java.time.Duration
-import kotlin.system.measureNanoTime
 
 
 inline fun measureTime(
@@ -12,7 +11,7 @@ inline fun measureTime(
 ): Double {
     if (warmUp > 0)
         makeWarmUp(warmUp, action)
-    val epsilonInNanos = epsilon.nano * 100
+    val epsilonInNanos = epsilon.toNanos() * 100
     val start = System.nanoTime()
     var endTime: Long
     var counter = 0
@@ -21,14 +20,9 @@ inline fun measureTime(
         ++counter
         endTime = System.nanoTime()
     } while (endTime - start < epsilonInNanos || counter < minRetries)
-    return (endTime - start) / counter.toDouble()
+    return (endTime - start) / counter.toDouble() / 1e6 // from nano to millis
 }
 
 inline fun makeWarmUp(repeat: Int, action: () -> Unit) {
-    println("warm up started")
-    repeat(repeat) {
-        val time = measureNanoTime(action)
-        println("warm up $it: $time ns")
-    }
-    println("warm up end")
+    repeat(repeat) { action() }
 }
