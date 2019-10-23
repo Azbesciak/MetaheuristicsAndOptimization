@@ -35,7 +35,8 @@ internal class SolutionParserTest {
         val result = SolutionParser.parse(instance.id, instance.solution)
         val expectedSolution = Solution(
                 instanceName = instance.id,
-                sequence = expectedSequence
+                sequence = expectedSequence,
+                score = 0.0
         )
         assertEquals(expectedSolution, result) { "solution is different" }
     }

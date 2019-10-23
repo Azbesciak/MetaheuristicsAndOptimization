@@ -14,7 +14,8 @@ object SolutionParser : ContentParser<Solution> {
                         .dropLastWhile { !it.looksLikePositiveNumber }
                         .flatMap { it.splitByWhiteSpace() }
                         .map { it.toInt() }
-                        .toIntArray()
+                        .toIntArray(),
+                score = 0.0
         )
     }
 }
