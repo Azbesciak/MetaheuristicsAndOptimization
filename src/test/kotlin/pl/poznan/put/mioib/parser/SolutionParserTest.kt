@@ -32,7 +32,8 @@ internal class SolutionParserTest {
     @ParameterizedTest
     @MethodSource("source")
     fun parse(instance: TestInstance, expectedSequence: IntArray) {
-        val result = SolutionParser.parse(instance.id, instance.solution)
+
+        val result = SolutionParser { 0.0 }.parse(instance.id, instance.solution)
         val expectedSolution = Solution(
                 instanceName = instance.id,
                 sequence = expectedSequence,

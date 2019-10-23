@@ -1,11 +1,15 @@
 package pl.poznan.put.mioib.reader
 
+import pl.poznan.put.mioib.model.Instance
+import pl.poznan.put.mioib.model.Solution
+import pl.poznan.put.mioib.parser.ContentParser
 import pl.poznan.put.mioib.parser.FileContentParser
-import pl.poznan.put.mioib.parser.InstanceParser
-import pl.poznan.put.mioib.parser.SolutionParser
 import java.io.File
 
-object InstanceSolutionReader : Reader<List<InstanceSolution>> {
+class InstanceSolutionReader(
+        private val instanceParser: ContentParser<Instance>,
+        private val solutionParser: ContentParser<Solution>
+) : Reader<List<InstanceSolution>> {
     override fun read(path: String): List<InstanceSolution> {
         val instanceAndSolutionPath = File(path)
         val fileName = instanceAndSolutionPath.name
@@ -23,8 +27,8 @@ object InstanceSolutionReader : Reader<List<InstanceSolution>> {
     private fun prepareInstance(name: String, files: List<File>) =
             InstanceSolution(
                     name = name,
-                    instance = FileContentParser(name, files, InstanceParser),
-                    solution = FileContentParser(name, files, SolutionParser)
+                    instance = FileContentParser(name, files, instanceParser),
+                    solution = FileContentParser(name, files, solutionParser)
             )
 
     private fun getInstanceFiles(parentDir: String, fileName: String, path: String) =

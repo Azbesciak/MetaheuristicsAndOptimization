@@ -4,7 +4,9 @@ import pl.poznan.put.mioib.looksLikePositiveNumber
 import pl.poznan.put.mioib.model.Solution
 import pl.poznan.put.mioib.splitByWhiteSpace
 
-object SolutionParser : ContentParser<Solution> {
+class SolutionParser(
+        private val scoreProvider: (instance: String) -> Double
+) : ContentParser<Solution> {
     override val extension = "opt.tour"
     override fun parse(contentName: String, content: List<String>): Solution {
         return Solution(
@@ -15,7 +17,7 @@ object SolutionParser : ContentParser<Solution> {
                         .flatMap { it.splitByWhiteSpace() }
                         .map { it.toInt() }
                         .toIntArray(),
-                score = 0.0
+                score = scoreProvider(contentName)
         )
     }
 }
