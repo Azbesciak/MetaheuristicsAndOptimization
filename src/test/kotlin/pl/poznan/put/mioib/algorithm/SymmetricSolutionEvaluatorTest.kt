@@ -1,7 +1,6 @@
 package pl.poznan.put.mioib.algorithm
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -9,10 +8,10 @@ import pl.poznan.put.mioib.model.Instance
 import pl.poznan.put.mioib.model.Location
 import pl.poznan.put.mioib.model.Weighting
 
-internal class SolutionEvaluatorTest {
+internal class SymmetricSolutionEvaluatorTest {
 
     private val instanceIndices = (0 until 4).toList().toIntArray()
-    private val solutionEvaluator = SolutionEvaluator(
+    private val solutionEvaluator = SymmetricSolutionEvaluator(
             SymmetricWeightMatrix(
                     Instance("",
                             Weighting.EUC_2D,
@@ -52,7 +51,7 @@ internal class SolutionEvaluatorTest {
     @ParameterizedTest
     @MethodSource("solutions")
     fun testSolutionValueCalculation(expected: Double, solution: IntArray) {
-        assertEquals(expected, solutionEvaluator.forSolution(solution), 1e-4)
+        assertEquals(expected, solutionEvaluator.solution(solution), 1e-4)
     }
 
     @ParameterizedTest

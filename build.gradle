@@ -48,6 +48,7 @@ dependencies {
             "org.junit.platform:junit-platform-launcher:$junit5_plugin_version",
             "org.junit.platform:junit-platform-runner:$junit5_plugin_version",
     )
+    testCompile "com.nhaarman:mockito-kotlin:1.6.0"
 }
 
 compileKotlin {
