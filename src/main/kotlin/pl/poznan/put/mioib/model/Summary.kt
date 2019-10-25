@@ -10,15 +10,18 @@ data class Summary(
     val scoreEntries: MutableList<Score>?,
     val time: Double
 ) {
-    fun save() {
-        try {
+    fun save(dir: String="./summary"): String? {
+        return try {
             val gson = Gson()
             val jsonString = gson.toJson(this)
+            val path = "$dir/${this.name}_${Date().toString()}.result"
 
-            File("${this.name}_${Date().toString()}.result").writeText(jsonString)
+            File(path).writeText(jsonString)
+            path
         }
         catch (e: Exception){
             print("Error: Couldn't save Summary\n$e")
+            null
         }
     }
 }
