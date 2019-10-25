@@ -1,10 +1,11 @@
-package pl.poznan.put.mioib.algorithm
+package pl.poznan.put.mioib.algorithm.ls
 
 import com.nhaarman.mockito_kotlin.doReturn
 import com.nhaarman.mockito_kotlin.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import pl.poznan.put.mioib.algorithm.weight.SolutionEvaluator
 
 internal class GreedyNeighbourhoodBrowserTest {
 

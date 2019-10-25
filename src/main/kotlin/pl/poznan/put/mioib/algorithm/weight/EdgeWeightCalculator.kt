@@ -1,4 +1,4 @@
-package pl.poznan.put.mioib.algorithm
+package pl.poznan.put.mioib.algorithm.weight
 
 import pl.poznan.put.mioib.model.Location
 

@@ -1,4 +1,6 @@
-package pl.poznan.put.mioib.algorithm
+package pl.poznan.put.mioib.algorithm.ls
+
+import pl.poznan.put.mioib.algorithm.weight.SolutionEvaluator
 
 class GreedyNeighbourhoodBrowser(
         private val evaluator: SolutionEvaluator,

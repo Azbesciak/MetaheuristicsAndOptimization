@@ -1,9 +1,12 @@
-package pl.poznan.put.mioib.algorithm
+package pl.poznan.put.mioib.algorithm.weight
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import pl.poznan.put.mioib.algorithm.weight.Euclides2DWeightCalculator
+import pl.poznan.put.mioib.algorithm.weight.SymmetricSolutionEvaluator
+import pl.poznan.put.mioib.algorithm.weight.SymmetricWeightMatrix
 import pl.poznan.put.mioib.model.Instance
 import pl.poznan.put.mioib.model.Location
 import pl.poznan.put.mioib.model.Weighting

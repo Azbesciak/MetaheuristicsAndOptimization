@@ -1,4 +1,4 @@
-package pl.poznan.put.mioib.algorithm
+package pl.poznan.put.mioib.algorithm.weight
 
 interface SolutionEvaluator {
     fun solution(sequence: IntArray): Double

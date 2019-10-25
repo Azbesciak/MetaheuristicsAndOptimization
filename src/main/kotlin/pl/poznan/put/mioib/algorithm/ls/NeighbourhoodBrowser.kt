@@ -1,4 +1,4 @@
-package pl.poznan.put.mioib.algorithm
+package pl.poznan.put.mioib.algorithm.ls
 
 interface NeighbourhoodBrowser {
     fun browse(indices: IntArray): List<DeltaUpdate>
