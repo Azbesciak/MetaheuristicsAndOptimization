@@ -1,4 +1,4 @@
-package pl.poznan.put.mioib.model
+package pl.poznan.put.mioib.report
 
 data class Score(
     val value: Double,

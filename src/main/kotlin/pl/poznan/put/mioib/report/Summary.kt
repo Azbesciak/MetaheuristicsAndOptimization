@@ -1,15 +1,23 @@
-package pl.poznan.put.mioib.model
+package pl.poznan.put.mioib.report
 
 import com.google.gson.Gson
+import pl.poznan.put.mioib.model.SolutionProposal
 import java.io.File
 import java.lang.Exception
 import java.util.*
 
 data class Summary(
-    val name: String,
-    val scoreEntries: MutableList<Score>?,
-    val time: Double
+        val name: String,
+        val time: Double,
+        val scoreEntries: MutableList<Score> = mutableListOf()
 ) {
+
+
+
+    fun addEntry(solution: SolutionProposal, attempt: Int, time: Double){
+        this.scoreEntries.add(Score(solution.score, attempt, time))
+    }
+
     fun save(dir: String="./summary"): String? {
         return try {
             val gson = Gson()
