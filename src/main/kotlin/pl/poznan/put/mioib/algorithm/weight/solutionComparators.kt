@@ -5,7 +5,8 @@ import pl.poznan.put.mioib.model.SolutionProposal
 
 typealias SolutionComparator = (old: SolutionProposal, newOne: SolutionProposal) -> Boolean
 
-val MIN_SOLUTION: SolutionComparator = { old, newOne -> newOne.score < old.score }
+private const val MIN_IMPROVEMENT = 1e-8
+val MIN_SOLUTION: SolutionComparator = { old, newOne -> old.score - newOne.score > MIN_IMPROVEMENT }
 
 typealias SolutionValueComparator = (old: Double, newOne: Double) -> Boolean
 
