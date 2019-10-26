@@ -16,8 +16,17 @@ class DefaultChart:
     def generate(self):
         img_path = 'imgs/{}'.format(self.name)
         if not os.path.exists(img_path):
-            os.mkdir(img_path)
-        self.plt.savefig('{}/{}.png'.format(img_path, self.json_data['name']))
+            os.makedirs(img_path)
+        
+        file_path = '{}/{}.png'.format(img_path, self.json_data['name'])
+        self.plt.savefig(file_path)
+
+        return R'''
+\begin{figure}[H]
+\includegraphics[width=\columnwidth]{''' + file_path + '''}
+\caption{Przewidywany wykres funkcji}
+\end{figure}
+'''
 
 class SummaryReport(DefaultChart):
     def create_plt(self):

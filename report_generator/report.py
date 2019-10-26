@@ -5,14 +5,23 @@ import argparse
 from pathlib import Path
 from glob import glob
 import charts
+from io import StringIO
+import shutil
 
 def generate():
+    output = StringIO()
+
     for f in glob('{}/*.sum'.format(args.path), recursive=True):
         with open(f) as json_file:
             summary = json.load(json_file)
             print(summary)
-            charts.SummaryReport('summary', summary).generate()
 
+            summary_report = charts.SummaryReport('summary', summary).generate()
+            print(summary_report, file=output)
+
+    with open('report.tex', 'w') as fd:
+        output.seek(0)
+        shutil.copyfileobj(output, fd)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', type=Path,
