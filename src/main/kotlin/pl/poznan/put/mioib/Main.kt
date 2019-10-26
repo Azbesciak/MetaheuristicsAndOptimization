@@ -23,6 +23,8 @@ fun main(args: Array<String>) = ProgramExecutor {
             InstanceParser,
             SolutionParser { solutions[it] }
     ).read(instancePath)
+    val printer = SolutionPrinter()
+    printer.init()
     instances.forEach {
         val instance = it.instance
         val evaluator = SymmetricSolutionEvaluator(SymmetricWeightMatrix(instance, Euclides2DWeightCalculator))
@@ -36,7 +38,7 @@ fun main(args: Array<String>) = ProgramExecutor {
                 collectedSolutions += solution
         }
         val stats = collectedSolutions.stream().mapToDouble { it.score }.summaryStatistics()
-        println("${it.name} | TIME: $averageTime ns/instance | avgScore: ${stats.average} | bestScore: ${stats.min} | worstScore: ${stats.max} | instanceBest: ${solutions[instance.name]}")
+        printer.update(it.name, averageTime, stats.average, stats.min, stats.max, solutions[instance.name])
     }
 }.main(args)
 
