@@ -11,10 +11,8 @@ class InstanceSolutionReader(
         private val solutionParser: ContentParser<Solution>
 ) : Reader<List<InstanceSolution>> {
     override fun read(path: String): List<InstanceSolution> {
-        val instanceAndSolutionPath = File(path)
-        val fileName = instanceAndSolutionPath.name
-        val parentDir = instanceAndSolutionPath.parent
-        require(!parentDir.isNullOrBlank()) { "parent dir not found" }
+        val (parentDir, fileName) = getFileSpec(path)
+        require(!parentDir.isBlank()) { "parent dir not found" }
         val instanceFiles = getInstanceFiles(parentDir, fileName, path)
         return instanceFiles
                 .groupBy { it.instanceName }
@@ -37,4 +35,9 @@ class InstanceSolutionReader(
             ) {
                 "instance files for '$path' not found"
             }
+
+    private fun getFileSpec(path: String) = File(path).run {
+        if (isDirectory) path to ""
+        else parent to name
+    }
 }
