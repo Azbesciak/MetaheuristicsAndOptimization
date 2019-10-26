@@ -23,26 +23,26 @@ class SymmetricSolutionEvaluator(
     override fun delta(firstIndex: Int, secondIndex: Int, sequence: IntArray): Double {
         var fi = firstIndex
         var si = secondIndex
-        if (fi > si) {
+        val lastIndex = sequence.size - 1
+        if (fi > si || (fi == 0 && si == lastIndex)) {
             fi = secondIndex
             si = firstIndex
         }
-        val lastIndex = sequence.size - 1
         val firstId = sequence[fi]
         val beforeFirstId = sequence[if (fi == 0) lastIndex else (fi - 1)]
         val secondId = sequence[si]
         val afterSecondId = sequence[if (si == lastIndex) 0 else (si + 1)]
         var delta = -weightMatrix[beforeFirstId, firstId]
-        delta -= weightMatrix[secondId, afterSecondId]
         delta += weightMatrix[beforeFirstId, secondId]
+        delta -= weightMatrix[secondId, afterSecondId]
         delta += weightMatrix[firstId, afterSecondId]
-        if (si - fi > 1 && !(si == lastIndex && fi == 0)) {
+        if (si - fi > 1) {
             val afterFirstId = sequence[fi + 1]
             delta -= weightMatrix[firstId, afterFirstId]
-            delta += weightMatrix[firstId, afterSecondId]
+            delta += weightMatrix[secondId, afterFirstId]
             val beforeSecondId = sequence[si - 1]
             delta -= weightMatrix[beforeSecondId, secondId]
-            delta += weightMatrix[beforeFirstId, secondId]
+            delta += weightMatrix[beforeSecondId, firstId]
         }
         return delta
     }
