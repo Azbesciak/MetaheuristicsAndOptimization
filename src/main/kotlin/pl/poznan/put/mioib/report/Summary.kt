@@ -1,6 +1,7 @@
 package pl.poznan.put.mioib.report
 
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import pl.poznan.put.mioib.model.SolutionProposal
 import java.io.File
 import java.lang.Exception
@@ -18,7 +19,7 @@ data class Summary(
 
     fun save(dir: String="summary"): String? {
         return try {
-            val gson = Gson()
+            val gson = GsonBuilder().setPrettyPrinting().create()
             val jsonString = gson.toJson(this)
             val filename = "${this.name}.sum"
 
