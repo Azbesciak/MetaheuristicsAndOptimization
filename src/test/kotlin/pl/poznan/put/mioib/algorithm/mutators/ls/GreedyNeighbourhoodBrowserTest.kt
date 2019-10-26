@@ -1,4 +1,4 @@
-package pl.poznan.put.mioib.algorithm.ls
+package pl.poznan.put.mioib.algorithm.mutators.ls
 
 import com.nhaarman.mockito_kotlin.doReturn
 import com.nhaarman.mockito_kotlin.mock
@@ -18,8 +18,8 @@ internal class GreedyNeighbourhoodBrowserTest {
             on { delta(1, 3, indices) } doReturn 4.0
             on { delta(4, 1, indices) } doReturn 0.0
         }
-        val browser = GreedyNeighbourhoodBrowser(se) { a, b -> a < b }
-        val result = browser.browse(indices)
+        val browser = GreedyNeighbourhoodBrowser { a, b -> a < b }
+        val result = browser.browse(indices, se)
         assertEquals(1, result.size) { "Expected only one result" }
         val (from, to, resultValue) = result.first()
         assertAll({

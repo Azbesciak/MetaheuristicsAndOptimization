@@ -1,10 +1,11 @@
 package pl.poznan.put.mioib.algorithm.stopcondition
 
+import pl.poznan.put.mioib.algorithm.weight.SolutionComparator
 import pl.poznan.put.mioib.model.SolutionProposal
 
 data class NotImprovingSolution(
         private val notImprovingIterations: Int,
-        private val isBetter: (old: SolutionProposal, newOne: SolutionProposal) -> Boolean
+        private val isBetter: SolutionComparator
 ) : StopCondition {
     private var iterationsFromLastImprovement: Int = 0
     private var last: SolutionProposal? = null
@@ -23,6 +24,5 @@ data class NotImprovingSolution(
         iterationsFromLastImprovement = 0
         last = null
     }
-
 
 }
