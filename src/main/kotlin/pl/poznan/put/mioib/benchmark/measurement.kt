@@ -16,14 +16,12 @@ inline fun measureTime(
     val bar = ProgressBar()
     val minDurationInNanos = minDuration.toNanos()
     val start = System.nanoTime()
-    var endTime: Long
     var counter = 0
     var elapsedTime: Long
     do {
         action()
         ++counter
-        endTime = System.nanoTime()
-        elapsedTime = endTime - start
+        elapsedTime = System.nanoTime() - start
         if (showProgress) {
             val progress = min(elapsedTime / minDurationInNanos.toDouble(), counter / minRetries.toDouble())
             bar.update(progress, counter, minRetries, elapsedTime, minDurationInNanos)
