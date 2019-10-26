@@ -18,6 +18,7 @@ class ProgramExecutor(private val task: Params.() -> Unit) : CliktCommand() {
             .int().default(100).validate { it >= 0 }
     private val randomSeed by option(help = "random seed value").int().default(1234)
     private val solutionsToCollect by option(help = "number of solutions to collect").int().default(10)
+    private val showProgress by option(help = "should show progress").default("false")
 
     override fun run() {
         Params(
@@ -28,7 +29,8 @@ class ProgramExecutor(private val task: Params.() -> Unit) : CliktCommand() {
                 minDuration = Duration.parse(minDuration.toUpperCase()),
                 notImprovingSolutions = notImprovingSolutions,
                 randomSeed = randomSeed,
-                solutionsToCollect = solutionsToCollect
+                solutionsToCollect = solutionsToCollect,
+                showProgress = showProgress.toLowerCase() == "true"
         ).task()
     }
 }
@@ -41,5 +43,6 @@ data class Params(
         val minDuration: Duration,
         val notImprovingSolutions: Int,
         val randomSeed: Int,
-        val solutionsToCollect: Int
+        val solutionsToCollect: Int,
+        val showProgress: Boolean
 )

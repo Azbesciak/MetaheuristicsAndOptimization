@@ -30,7 +30,7 @@ fun main(args: Array<String>) = ProgramExecutor {
         val lsBrowser = GreedyNeighbourhoodBrowser(MIN_OR_EQUAL_SOLUTION_VALUE)
         val collectedSolutions = mutableListOf<SolutionProposal>()
         val random = Random(randomSeed)
-        val averageTime = measureTime(minRetries, warmUp, minDuration) {
+        val averageTime = measureTime(minRetries, warmUp, minDuration, showProgress) {
             val solution = solve(lsBrowser, isBetter, instance, evaluator) { random }
             if (collectedSolutions.size < solutionsToCollect)
                 collectedSolutions += solution
