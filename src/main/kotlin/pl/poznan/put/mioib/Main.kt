@@ -14,6 +14,8 @@ import pl.poznan.put.mioib.parser.BestScoresReader
 import pl.poznan.put.mioib.parser.InstanceParser
 import pl.poznan.put.mioib.parser.SolutionParser
 import pl.poznan.put.mioib.reader.InstanceSolutionReader
+import pl.poznan.put.mioib.report.Score
+import pl.poznan.put.mioib.report.Summary
 import pl.poznan.put.mioib.solver.Solver
 import kotlin.random.Random
 
@@ -39,6 +41,9 @@ fun main(args: Array<String>) = ProgramExecutor {
         }
         val stats = collectedSolutions.stream().mapToDouble { it.score }.summaryStatistics()
         printer.update(it.name, averageTime, stats.average, stats.min, stats.max, solutions[instance.name])
+
+        val summary = Summary(it.name, averageTime, Score(stats.average, stats.min, stats.max, solutions[instance.name]), collectedSolutions.map{s -> s.score})
+        summary.save()
     }
 }.main(args)
 

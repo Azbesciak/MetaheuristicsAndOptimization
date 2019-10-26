@@ -1,8 +1,9 @@
 package pl.poznan.put.mioib.report
 
 data class Score(
-    val value: Double,
-    val attempt: Int,
-    val time: Double 
+    val avg: Double,
+    val min: Double,
+    val max: Double,
+    val original: Double
 ) {
 }

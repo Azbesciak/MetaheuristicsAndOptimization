@@ -4,28 +4,29 @@ import com.google.gson.Gson
 import pl.poznan.put.mioib.model.SolutionProposal
 import java.io.File
 import java.lang.Exception
+import java.nio.file.Path
 import java.util.*
 
 data class Summary(
         val name: String,
-        val time: Double,
-        val scoreEntries: MutableList<Score> = mutableListOf()
+        val averageTime: Double,
+        val score: Score,
+        val attempts: List<Double> = listOf<Double>()
 ) {
 
 
 
-    fun addEntry(solution: SolutionProposal, attempt: Int, time: Double){
-        this.scoreEntries.add(Score(solution.score, attempt, time))
-    }
-
-    fun save(dir: String="./summary"): String? {
+    fun save(dir: String="summary"): String? {
         return try {
             val gson = Gson()
             val jsonString = gson.toJson(this)
-            val path = "$dir/${this.name}_${Date().toString()}.result"
+            val filename = "${this.name}.sum"
 
-            File(path).writeText(jsonString)
-            path
+            val directory = File(dir)
+            directory.mkdirs()
+
+            File(directory, filename).writeText(jsonString)
+            "$directory/$filename"
         }
         catch (e: Exception){
             print("Error: Couldn't save Summary\n$e")
