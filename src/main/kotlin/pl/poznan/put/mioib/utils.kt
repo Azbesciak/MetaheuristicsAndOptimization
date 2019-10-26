@@ -1,6 +1,6 @@
 package pl.poznan.put.mioib
 
-import java.util.concurrent.ThreadLocalRandom
+import kotlin.random.Random
 
 val emptySignsRegex = "\\s+".toRegex()
 
@@ -18,12 +18,14 @@ fun IntArray.swap(first: Int, second: Int) {
     set(second, temp)
 }
 
-fun IntArray.shuffled(random: ThreadLocalRandom = ThreadLocalRandom.current()) =
+fun IntArray.shuffled(random: Random = DEFAULT_RANDOM) =
         copyOf().also { it.shuffle(random) }
 
-fun IntArray.shuffle(random: ThreadLocalRandom = ThreadLocalRandom.current()) {
+fun IntArray.shuffle(random: Random = DEFAULT_RANDOM) {
     (size - 1 downTo 1).forEach { i ->
         val index = random.nextInt(i + 1)
         swap(i, index)
     }
 }
+
+private val DEFAULT_RANDOM = Random(1234)
