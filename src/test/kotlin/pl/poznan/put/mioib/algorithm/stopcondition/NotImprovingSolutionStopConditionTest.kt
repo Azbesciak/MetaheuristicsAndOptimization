@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test
 import pl.poznan.put.mioib.model.SolutionProposal
 
 
-class NotImprovingSolutionTest {
-    private val condition = NotImprovingSolution(2) { old, newOne ->
+class NotImprovingSolutionStopConditionTest {
+    private val condition = NotImprovingSolutionStopCondition(2) { old, newOne ->
         old.score < newOne.score
     }
 

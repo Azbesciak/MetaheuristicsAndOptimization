@@ -3,7 +3,7 @@ package pl.poznan.put.mioib.algorithm.stopcondition
 import pl.poznan.put.mioib.algorithm.weight.SolutionComparator
 import pl.poznan.put.mioib.model.SolutionProposal
 
-data class NotImprovingSolution(
+data class NotImprovingSolutionStopCondition(
         private val notImprovingIterations: Int,
         private val isBetter: SolutionComparator
 ) : StopCondition {
