@@ -22,6 +22,9 @@ object Solver {
         while (!stopCondition.shouldStop(recentSolution) && mutator.canMutate()) {
             val recentSolutionCopy = recentSolution.copy(sequence = recentSolution.sequence.clone())
             recentSolution = mutator.mutate(recentSolutionCopy, evaluator)
+            require(recentSolution.score >= 0) {
+                "${instance.name}: solution score is negative: $recentSolution"
+            }
             if (isBetter(best, recentSolution))
                 best = recentSolution
         }
