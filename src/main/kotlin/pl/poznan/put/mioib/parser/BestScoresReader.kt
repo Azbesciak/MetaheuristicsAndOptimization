@@ -3,7 +3,7 @@ package pl.poznan.put.mioib.parser
 import pl.poznan.put.mioib.reader.Reader
 import java.io.File
 
-object BestScoreReader : Reader<BestScoresSource> {
+object BestScoresReader : Reader<BestScoresSource> {
     override fun read(path: String) =
             FileContentParser("solutions", listOf(File(path)), BestScoresParser)
 }
