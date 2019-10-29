@@ -24,6 +24,7 @@ def generate():
             summary = json.load(json_file)
             print(summary)
 
+            print('\\section{{{}}}'.format(summary['name']), file=output)
             summary_report = charts.SummaryChart('summary', summary).generate()
             print(summary_report, file=output)
 

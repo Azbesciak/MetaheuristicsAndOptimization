@@ -66,6 +66,4 @@ class SeqChart(DefaultChart):
         plt.axhline(y=scores['avg']-std, color='orange', linestyle='--', label='avg')
         plt.axhline(y=scores['avg']+std, color='orange', linestyle='--', label='avg')
 
-        plt.show()
-
         return plt
