@@ -1,6 +1,7 @@
 package pl.poznan.put.mioib
 
 import pl.poznan.put.mioib.algorithm.mutators.MergedMutator
+import pl.poznan.put.mioib.algorithm.mutators.SolutionMutator
 import pl.poznan.put.mioib.algorithm.mutators.ls.GreedyNeighbourhoodBrowser
 import pl.poznan.put.mioib.algorithm.mutators.ls.LocalSearchMutator
 import pl.poznan.put.mioib.algorithm.mutators.random.RandomMutator
@@ -28,36 +29,42 @@ fun main(args: Array<String>) = ProgramExecutor {
     val printer = SolutionPrinter()
     printer.init()
     instances.forEach {
-        val instance = it.instance
-        val evaluator = SymmetricSolutionEvaluator(SymmetricWeightMatrix(instance, Euclides2DWeightCalculator))
-        val isBetter = MIN_SOLUTION
-        val lsBrowser = GreedyNeighbourhoodBrowser(MIN_OR_EQUAL_SOLUTION_VALUE)
-        val collectedSolutions = mutableListOf<SolutionProposal>()
         val random = Random(randomSeed)
-        val averageTime = measureTime(minRetries, warmUp, minDuration, showProgress) {
-            val solution = solve(lsBrowser, isBetter, instance, evaluator) { random }
-            if (collectedSolutions.size < solutionsToCollect)
-                collectedSolutions += solution
-        }
-        val stats = collectedSolutions.stream().mapToDouble { it.score }.summaryStatistics()
-        printer.update(it.name, averageTime, stats.average, stats.min, stats.max, solutions[instance.name])
+        val lsBrowser = GreedyNeighbourhoodBrowser(MIN_OR_EQUAL_SOLUTION_VALUE)
 
-        val summary = Summary(it.name, averageTime, Score(stats.average, stats.min, stats.max, solutions[instance.name]), collectedSolutions.map{s -> s.score})
-        summary.save()
+
+        val mutators = mutableListOf(
+                Pair(MergedMutator(RandomMutator(random, 1), LocalSearchMutator(lsBrowser)), "Merged"),
+                Pair(RandomMutator(random, 1), "Random"),
+                Pair(LocalSearchMutator(lsBrowser), "Greedy"))
+
+        for (mutator in mutators)
+        {
+            val instance = it.instance
+            val evaluator = SymmetricSolutionEvaluator(SymmetricWeightMatrix(instance, Euclides2DWeightCalculator))
+            val isBetter = MIN_SOLUTION
+            val collectedSolutions = mutableListOf<SolutionProposal>()
+
+            val averageTime = measureTime(minRetries, warmUp, minDuration, showProgress) {
+                val solution = solve(isBetter, instance, evaluator, mutator.first)
+                if (collectedSolutions.size < solutionsToCollect)
+                    collectedSolutions += solution
+            }
+            val stats = collectedSolutions.stream().mapToDouble { it.score }.summaryStatistics()
+            printer.update(it.name, averageTime, stats.average, stats.min, stats.max, solutions[instance.name])
+
+            val summary = Summary("${it.name} (${mutator.second})", averageTime, Score(stats.average, stats.min, stats.max, solutions[instance.name]), collectedSolutions.map{s -> s.score})
+            summary.save()
+        }
     }
 }.main(args)
 
 private fun Params.solve(
-        lsBrowser: GreedyNeighbourhoodBrowser,
         isBetter: SolutionComparator,
         instance: Instance,
         evaluator: SymmetricSolutionEvaluator,
-        random: () -> Random
+        mutator: SolutionMutator
 ): SolutionProposal {
-    val mutator = MergedMutator(
-            RandomMutator(random(), 1),
-            LocalSearchMutator(lsBrowser)
-    )
     val stopCondition = prepareStopCondition(isBetter)
     return Solver.solve(
             instance = instance, stopCondition = stopCondition,
