@@ -2,6 +2,7 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 import re
+import statistics
 
 
 
@@ -34,9 +35,10 @@ class DefaultChart:
 Wnioski: TODO
 '''
 
-class SummaryReport(DefaultChart):
+class SummaryChart(DefaultChart):
     def create_plt(self):
         labels = ('Avg', 'Min', 'Max', 'Origin')
+        attempts = self.json_data['attempts']
         y_pos = np.arange(len(labels))
         scores = self.json_data['score']
         performance = [scores['avg'], scores['min'], scores['max'], scores['original']]
@@ -48,12 +50,22 @@ class SummaryReport(DefaultChart):
 
         return plt
 
-class SeqReport(DefaultChart):
+class SeqChart(DefaultChart):
     def create_plt(self):
         attempts = self.json_data['attempts']
+        scores = self.json_data['score']
+        std = statistics.stdev(attempts)
+
         x = range(len(attempts))
         plt.ylabel('Wynik')
-        plt.title('Jakość rozwiązania początkowego vs końcowego')
+        plt.title('Wyniki znalezionych rozwiązań')
         plt.scatter(x, attempts)
+
+        plt.axhline(y=scores['avg'], color='r', linestyle='-', label='avg')
+
+        plt.axhline(y=scores['avg']-std, color='orange', linestyle='--', label='avg')
+        plt.axhline(y=scores['avg']+std, color='orange', linestyle='--', label='avg')
+
+        plt.show()
 
         return plt

@@ -24,10 +24,10 @@ def generate():
             summary = json.load(json_file)
             print(summary)
 
-            summary_report = charts.SummaryReport('summary', summary).generate()
+            summary_report = charts.SummaryChart('summary', summary).generate()
             print(summary_report, file=output)
 
-            seq_report = charts.SeqReport('Początkowe vs Końcowe', summary).generate()
+            seq_report = charts.SeqChart('Początkowe vs Końcowe', summary).generate()
             print(seq_report, file=output)
 
     # Put document ending
