@@ -19,7 +19,7 @@ def generate():
     print(templates.INTRO, file=output)
 
     # Generate charts
-    for f in glob('{}/*.sum'.format(args.path), recursive=True):
+    for f in sorted(glob('{}/*.sum'.format(args.path), recursive=True)):
         with open(f) as json_file:
             summary = json.load(json_file)
             print(summary)

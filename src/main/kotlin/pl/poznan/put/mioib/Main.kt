@@ -4,6 +4,7 @@ import pl.poznan.put.mioib.algorithm.mutators.MergedMutator
 import pl.poznan.put.mioib.algorithm.mutators.SolutionMutator
 import pl.poznan.put.mioib.algorithm.mutators.ls.GreedyNeighbourhoodBrowser
 import pl.poznan.put.mioib.algorithm.mutators.ls.LocalSearchMutator
+import pl.poznan.put.mioib.algorithm.mutators.ls.SteepestNeighbourhoodBrowser
 import pl.poznan.put.mioib.algorithm.mutators.random.RandomMutator
 import pl.poznan.put.mioib.algorithm.stopcondition.AnyStopCondition
 import pl.poznan.put.mioib.algorithm.stopcondition.NotImprovingSolutionStopCondition
@@ -31,12 +32,14 @@ fun main(args: Array<String>) = ProgramExecutor {
     instances.forEach {
         val random = Random(randomSeed)
         val lsBrowser = GreedyNeighbourhoodBrowser(MIN_OR_EQUAL_SOLUTION_VALUE)
+        val stBrowser = SteepestNeighbourhoodBrowser(MIN_OR_EQUAL_SOLUTION_VALUE)
 
 
         val mutators = mutableListOf(
                 Pair(MergedMutator(RandomMutator(random, 1), LocalSearchMutator(lsBrowser)), "Merged"),
                 Pair(RandomMutator(random, 1), "Random"),
-                Pair(LocalSearchMutator(lsBrowser), "Greedy"))
+                Pair(LocalSearchMutator(lsBrowser), "Greedy"),
+                Pair(LocalSearchMutator(stBrowser), "Steepest"))
 
         for (mutator in mutators)
         {
