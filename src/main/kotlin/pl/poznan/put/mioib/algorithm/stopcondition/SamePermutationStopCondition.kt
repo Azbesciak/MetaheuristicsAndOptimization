@@ -7,7 +7,9 @@ class SamePermutationStopCondition() : StopCondition {
     private var last: SolutionProposal? = null
 
     override fun shouldStop(solution: SolutionProposal): Boolean {
-        return if (this.last == null || !this.last!!.sequence.contentEquals(solution.sequence)){
+        // !this.last!!.sequence.contentEquals(solution.sequence) can freeze if init solution is better than any generated later
+        // thats why scores are compared instead
+        return if (this.last == null || this.last!!.score != solution.score){
             this.last = solution
             false
         }
