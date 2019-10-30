@@ -8,6 +8,7 @@ import pl.poznan.put.mioib.algorithm.mutators.ls.SteepestNeighbourhoodBrowser
 import pl.poznan.put.mioib.algorithm.mutators.random.RandomMutator
 import pl.poznan.put.mioib.algorithm.stopcondition.AnyStopCondition
 import pl.poznan.put.mioib.algorithm.stopcondition.NotImprovingSolutionStopCondition
+import pl.poznan.put.mioib.algorithm.stopcondition.SamePermutationStopCondition
 import pl.poznan.put.mioib.algorithm.weight.*
 import pl.poznan.put.mioib.benchmark.measureTime
 import pl.poznan.put.mioib.model.Instance
@@ -36,20 +37,21 @@ fun main(args: Array<String>) = ProgramExecutor {
 
 
         val mutators = mutableListOf(
-                Pair(MergedMutator(RandomMutator(random, 1), LocalSearchMutator(lsBrowser)), "Merged"),
-                Pair(RandomMutator(random, 1), "Random"),
+//                Pair(LocalSearchMutator(lsBrowser), "Random"),
+//                Pair(LocalSearchMutator(lsBrowser), "Heuristic"),
                 Pair(LocalSearchMutator(lsBrowser), "Greedy"),
                 Pair(LocalSearchMutator(stBrowser), "Steepest"))
 
         for (mutator in mutators)
         {
+            println("${it.name} (${mutator.second})")
             val instance = it.instance
             val evaluator = SymmetricSolutionEvaluator(SymmetricWeightMatrix(instance, Euclides2DWeightCalculator))
             val isBetter = MIN_SOLUTION
             val collectedSolutions = mutableListOf<SolutionProposal>()
 
             val averageTime = measureTime(minRetries, warmUp, minDuration, showProgress) {
-                val solution = solve(isBetter, instance, evaluator, mutator.first)
+                val solution = solve(isBetter, instance, evaluator, MergedMutator(RandomMutator(random, 1), mutator.first))
                 if (collectedSolutions.size < solutionsToCollect)
                     collectedSolutions += solution
             }
@@ -77,5 +79,6 @@ private fun Params.solve(
 }
 
 private fun Params.prepareStopCondition(isBetter: SolutionComparator) = AnyStopCondition(
-        NotImprovingSolutionStopCondition(notImprovingSolutions, isBetter)
+        //NotImprovingSolutionStopCondition(notImprovingSolutions, isBetter)
+        SamePermutationStopCondition()
 )

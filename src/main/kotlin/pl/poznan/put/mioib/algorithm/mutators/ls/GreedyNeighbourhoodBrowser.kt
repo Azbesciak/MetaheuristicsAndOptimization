@@ -7,17 +7,14 @@ class GreedyNeighbourhoodBrowser(
         private val isBetter: SolutionValueComparator
 ) : NeighbourhoodBrowser {
     override fun browse(indices: IntArray, evaluator: SolutionEvaluator): List<DeltaUpdate> {
-        var best: DeltaUpdate? = null
         (0 until indices.size - 1).forEach { from ->
             (from + 1 until indices.size).forEach { to ->
                 val result = evaluator.delta(from, to, indices)
                 if (result < 0){
                     return listOf( DeltaUpdate(from, to, result))
                 }
-                if (best == null || isBetter(best!!.scoreDelta, result))
-                    best = DeltaUpdate(from, to, result)
             }
         }
-        return listOf(best!!)
+        return listOf( DeltaUpdate(0, 0, 0.0))
     }
 }
