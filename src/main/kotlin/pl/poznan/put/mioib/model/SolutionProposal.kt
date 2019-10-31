@@ -2,7 +2,8 @@ package pl.poznan.put.mioib.model
 
 data class SolutionProposal(
         val sequence: IntArray,
-        val score: Double
+        val score: Double,
+        var steps: MutableList<Pair<Int, Double>> = mutableListOf() // <Iteration, Score>
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

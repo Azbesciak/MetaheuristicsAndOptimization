@@ -5,5 +5,4 @@ data class Score(
     val min: Double,
     val max: Double,
     val original: Double
-) {
-}
+)

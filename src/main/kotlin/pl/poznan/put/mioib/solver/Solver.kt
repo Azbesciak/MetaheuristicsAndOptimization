@@ -13,12 +13,15 @@ object Solver {
             stopCondition: StopCondition,
             evaluator: SolutionEvaluator,
             mutator: SolutionMutator,
-            isBetter: SolutionComparator
+            isBetter: SolutionComparator,
+            stepsSize: Int=100
     ): SolutionProposal {
         val initialSequence = instance.locations.indices.toList().toIntArray()
+        val steps = mutableListOf<Pair<Int, Double>>()
         var best = SolutionProposal(initialSequence, evaluator.solution(initialSequence))
         stopCondition.initialize()
         var recentSolution = best
+        var i = 0
         while (!stopCondition.shouldStop(recentSolution) && mutator.canMutate()) {
             val recentSolutionCopy = recentSolution.copy(sequence = recentSolution.sequence.clone())
             recentSolution = mutator.mutate(recentSolutionCopy, evaluator)
@@ -29,7 +32,11 @@ object Solver {
                 best = recentSolution
 //                print("${best.score} ")
             }
+            if (i++%stepsSize == 0){
+                steps.add(Pair(i, best.score))
+            }
         }
+        best.steps = steps
         return best
     }
 }
