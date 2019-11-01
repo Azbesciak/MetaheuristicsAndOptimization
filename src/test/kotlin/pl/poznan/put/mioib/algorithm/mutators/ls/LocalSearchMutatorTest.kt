@@ -24,7 +24,7 @@ internal class LocalSearchMutatorTest {
                 mutator.mutate(SolutionProposal(firstQuery, 20.0), evaluator)
         )
         assertEquals(
-                SolutionProposal(intArrayOf(1, 4, 3, 3), 25.0),
+                SolutionProposal(intArrayOf(1, 4, 2, 3), 25.0),
                 mutator.mutate(SolutionProposal(secondQuery, 10.0), evaluator)
         )
     }
