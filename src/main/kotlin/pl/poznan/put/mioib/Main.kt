@@ -75,7 +75,7 @@ fun main(args: Array<String>) = ProgramExecutor {
                     collectedResults += result
             }
             notifyResult(collectedResults, printer, it, averageTime, mutatorName)
-        }
+        }          
     }
 }.main(args)
 

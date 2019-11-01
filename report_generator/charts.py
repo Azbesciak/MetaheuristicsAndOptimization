@@ -5,7 +5,7 @@ import re
 from enum import Enum
 import statistics
 
-MARKERS = ['o', '^', 's', '*', 'p', 'x', 'D']
+MARKERS = ['s', 'o', '*', 'p', 'x', 'D']
 
 class DefaultChart:
     def __init__(self, name, json_data):
@@ -43,6 +43,7 @@ class CType(Enum):
         MAX = 'max'
         MIN = 'min'
         AVG = 'avg'
+        TIME = 'averageTime'
 
 class CompareChart(DefaultChart):
     def __init__(self, name, json_data, ctype, title):
@@ -59,15 +60,39 @@ class CompareChart(DefaultChart):
         i = 0
 
         for alg in next(iter(self.json_data.values())):
-            y = [x[alg]['score']['original'] / x[alg]['score'][self.ctype.value] for x in self.json_data.values()]
-            plt.scatter(labels, y, marker=MARKERS[i], label=alg)
+
+            if self.ctype in ([CType.AVG, CType.MAX, CType.MIN]):
+                scores = [x[alg]['score'][self.ctype.value] for x in self.json_data.values()]
+                originals = [x[alg]['score']['original'] for x in self.json_data.values()]
+                
+                y = [x/y for x, y in zip(originals, scores)]
+
+                if self.ctype == CType.AVG:
+                    attempts = [x[alg]['attempts'] for x in self.json_data.values()]
+                    e = []
+                    for a in attempts:
+                        x = [x['score'] for x in a]
+                        e.append(0 if len(x) < 2 else statistics.stdev(x))
+
+                    e = [x/y for x, y in zip(e, originals)]
+
+                    plt.errorbar(labels, y, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=MARKERS[i], label=alg) #, uplims=True, lolims=True)
+                else:
+                    plt.scatter(labels, y, marker=MARKERS[i], label=alg)
+                plt.ylim(0.0, 1.2) # todo: erase 0.0 
+            
+            elif self.ctype == CType.TIME:
+                y = [x[alg]['averageTime'] for x in self.json_data.values()]
+                plt.scatter(labels, y, marker=MARKERS[i], label=alg)
+
+
             i += 1
 
-        plt.ylim(0.0, 1.2) # todo: erase 0.0 
         plt.xticks(rotation=90)
         plt.legend()
         plt.ylabel('Wynik')
         plt.title(self.title)
+        plt.show()
 
         return plt
 

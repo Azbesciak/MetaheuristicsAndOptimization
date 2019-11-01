@@ -36,6 +36,9 @@ def generate():
 
         avg_scores = charts.CompareChart('Porównanie średnich wyników', instances, charts.CType.AVG, "Średnie wyniki").generate()
         print(avg_scores, file=output)
+        
+        avg_times = charts.CompareChart('Porównanie czasów działania', instances, charts.CType.TIME, "Czasy").generate()
+        print(avg_times, file=output)
 
         # Save output as Latex document
         with open(os.path.join(OUTPUT_DIR, 'summary.tex'), 'w') as fd:
