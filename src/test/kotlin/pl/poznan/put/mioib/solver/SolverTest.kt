@@ -31,7 +31,7 @@ internal class SolverTest {
         val evaluator = mock<SolutionEvaluator> {
             on { solution(any()) } doReturn 100.0 // max value let say
         }
-        val solution = Solver.solve(instance, stopCondition, evaluator, mutator) { o, n -> n.score < o.score }
+        val (solution) = Solver.solve(instance, stopCondition, evaluator, mutator) { o, n -> n.score < o.score }
         val bestSolutionIndex = 2
         assertEquals(SolutionProposal(intArrayOf(bestSolutionIndex), results[bestSolutionIndex]), solution)
     }
