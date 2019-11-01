@@ -19,6 +19,6 @@ class SteepestNeighbourhoodBrowser(
         return if(best!!.scoreDelta < 0)
             listOf(best!!)
         else
-            listOf( DeltaUpdate(0, 0, 0.0))
+            emptyList()
     }
 }

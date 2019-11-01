@@ -34,7 +34,7 @@ fun main(args: Array<String>) = ProgramExecutor {
     printer.init()
     instances.forEach {
         val random = Random(randomSeed)
-        val lsBrowser = GreedyNeighbourhoodBrowser(MIN_OR_EQUAL_SOLUTION_VALUE)
+        val lsBrowser = GreedyNeighbourhoodBrowser()
         val stBrowser = SteepestNeighbourhoodBrowser(MIN_OR_EQUAL_SOLUTION_VALUE)
 
 

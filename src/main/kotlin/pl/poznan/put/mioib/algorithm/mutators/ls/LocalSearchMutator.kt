@@ -9,7 +9,7 @@ class LocalSearchMutator(
         private val browser: NeighbourhoodBrowser
 ) : SolutionMutator {
     override fun mutate(solution: SolutionProposal, solutionEvaluator: SolutionEvaluator): SolutionProposal {
-        val (update) = browser.browse(solution.sequence, solutionEvaluator)
+        val (update) = browser.browse(solution.sequence, solutionEvaluator).ifEmpty { return solution }
         return SolutionProposal(
                 sequence = solution.sequence.swappedAt(update.from, update.to),
                 score = solution.score + update.scoreDelta

@@ -4,7 +4,6 @@ import pl.poznan.put.mioib.algorithm.weight.SolutionValueComparator
 import pl.poznan.put.mioib.algorithm.weight.SolutionEvaluator
 
 class GreedyNeighbourhoodBrowser(
-        private val isBetter: SolutionValueComparator
 ) : NeighbourhoodBrowser {
     override fun browse(indices: IntArray, evaluator: SolutionEvaluator): List<DeltaUpdate> {
         (0 until indices.size - 1).forEach { from ->
@@ -15,6 +14,6 @@ class GreedyNeighbourhoodBrowser(
                 }
             }
         }
-        return listOf( DeltaUpdate(0, 0, 0.0))
+        return emptyList()
     }
 }
