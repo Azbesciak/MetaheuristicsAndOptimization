@@ -18,7 +18,7 @@ internal class SteepestNeighbourhoodBrowserTest {
             on { delta(1, 3, indices) } doReturn 4.0
             on { delta(4, 1, indices) } doReturn 0.0
         }
-        val browser = SteepestNeighbourhoodBrowser(UpperTriangleNeighbourhoodExplorer) { a, b -> a < b }
+        val browser = SteepestNeighbourhoodBrowser { a, b -> a < b }
         val result = browser.browse(indices, se)
         assertEquals(1, result.size) { "Expected only one result" }
         val (from, to, resultValue) = result.first()
