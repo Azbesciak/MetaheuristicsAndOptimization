@@ -1,24 +1,21 @@
 package pl.poznan.put.mioib.algorithm.mutators.ls
 
-import pl.poznan.put.mioib.algorithm.weight.SolutionValueComparator
 import pl.poznan.put.mioib.algorithm.weight.SolutionEvaluator
+import pl.poznan.put.mioib.algorithm.weight.SolutionValueComparator
 
 class SteepestNeighbourhoodBrowser(
+        private val explorer: NeighbourhoodExplorer,
         private val isBetter: SolutionValueComparator
 ) : NeighbourhoodBrowser {
     override fun browse(indices: IntArray, evaluator: SolutionEvaluator): List<DeltaUpdate> {
         var best: DeltaUpdate? = null
-        (0 until indices.size - 1).forEach { from ->
-            (from + 1 until indices.size).forEach { to ->
-                val result = evaluator.delta(from, to, indices)
-                if (best == null || isBetter(best!!.scoreDelta, result))
-                    best = DeltaUpdate(from, to, result)
-            }
+        explorer.explore(indices) { from, to ->
+            val result = evaluator.delta(from, to, indices)
+            if (best == null || isBetter(best!!.scoreDelta, result))
+                best = DeltaUpdate(from, to, result)
+            false
         }
 
-        return if(best!!.scoreDelta < 0)
-            listOf(best!!)
-        else
-            emptyList()
+        return listOf(best!!)
     }
 }

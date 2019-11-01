@@ -10,4 +10,4 @@ val MIN_SOLUTION: SolutionComparator = { old, newOne -> old.score - newOne.score
 
 typealias SolutionValueComparator = (old: Double, newOne: Double) -> Boolean
 
-val MIN_OR_EQUAL_SOLUTION_VALUE: SolutionValueComparator = { old, newOne -> newOne <= old }
+val LOWER_OR_EQUAL_SOLUTION_VALUE: SolutionValueComparator = { old, newOne -> newOne <= old }

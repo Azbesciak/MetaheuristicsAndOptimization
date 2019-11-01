@@ -5,9 +5,9 @@ import pl.poznan.put.mioib.algorithm.mutators.SolutionMutator
 import pl.poznan.put.mioib.algorithm.mutators.ls.GreedyNeighbourhoodBrowser
 import pl.poznan.put.mioib.algorithm.mutators.ls.LocalSearchMutator
 import pl.poznan.put.mioib.algorithm.mutators.ls.SteepestNeighbourhoodBrowser
+import pl.poznan.put.mioib.algorithm.mutators.ls.UpperTriangleNeighbourhoodExplorer
 import pl.poznan.put.mioib.algorithm.mutators.random.RandomMutator
 import pl.poznan.put.mioib.algorithm.stopcondition.AnyStopCondition
-import pl.poznan.put.mioib.algorithm.stopcondition.NotImprovingSolutionStopCondition
 import pl.poznan.put.mioib.algorithm.stopcondition.SamePermutationStopCondition
 import pl.poznan.put.mioib.algorithm.weight.*
 import pl.poznan.put.mioib.benchmark.measureTime
@@ -32,10 +32,11 @@ fun main(args: Array<String>) = ProgramExecutor {
     ).read(instancePath)
     val printer = SolutionPrinter()
     printer.init()
+    val neighbourhoodExplorer = UpperTriangleNeighbourhoodExplorer
     instances.forEach {
         val random = Random(randomSeed)
-        val lsBrowser = GreedyNeighbourhoodBrowser()
-        val stBrowser = SteepestNeighbourhoodBrowser(MIN_OR_EQUAL_SOLUTION_VALUE)
+        val lsBrowser = GreedyNeighbourhoodBrowser(neighbourhoodExplorer, LOWER_OR_EQUAL_SOLUTION_VALUE)
+        val stBrowser = SteepestNeighbourhoodBrowser(neighbourhoodExplorer, LOWER_OR_EQUAL_SOLUTION_VALUE)
 
 
         val mutators = mutableListOf(
