@@ -35,9 +35,8 @@ fun main(args: Array<String>) = ProgramExecutor {
     val neighbourhoodExplorer = UpperTriangleNeighbourhoodExplorer
     instances.forEach {
         val random = Random(randomSeed)
-        val lsBrowser = GreedyNeighbourhoodBrowser(neighbourhoodExplorer, LOWER_OR_EQUAL_SOLUTION_VALUE)
-        val stBrowser = SteepestNeighbourhoodBrowser(neighbourhoodExplorer, LOWER_OR_EQUAL_SOLUTION_VALUE)
-
+        val lsBrowser = GreedyNeighbourhoodBrowser(neighbourhoodExplorer, LOWER_SOLUTION_VALUE)
+        val stBrowser = SteepestNeighbourhoodBrowser(neighbourhoodExplorer, LOWER_SOLUTION_VALUE)
 
         val mutators = mutableListOf(
 //                LocalSearchMutator(stBrowser) to "Random",
