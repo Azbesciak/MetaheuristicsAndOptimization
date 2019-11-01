@@ -13,12 +13,12 @@ import pl.poznan.put.mioib.algorithm.stopcondition.IterationsCountStopCondition
 import pl.poznan.put.mioib.algorithm.stopcondition.NotImprovingSolutionStopCondition
 import pl.poznan.put.mioib.algorithm.stopcondition.StopCondition
 import pl.poznan.put.mioib.algorithm.weight.*
+import pl.poznan.put.mioib.benchmark.LevenshteinSimilarityMeasurer
 import pl.poznan.put.mioib.benchmark.measureTime
 import pl.poznan.put.mioib.model.Instance
 import pl.poznan.put.mioib.model.Progress
 import pl.poznan.put.mioib.model.SolutionProposal
 import pl.poznan.put.mioib.parser.BestScoresReader
-import pl.poznan.put.mioib.parser.BestScoresSource
 import pl.poznan.put.mioib.parser.InstanceParser
 import pl.poznan.put.mioib.parser.SolutionParser
 import pl.poznan.put.mioib.reader.InstanceSolution
@@ -60,7 +60,7 @@ fun main(args: Array<String>) = ProgramExecutor {
                 if (collectedResults.size < solutionsToCollect)
                     collectedResults += result
             }
-            notifyResult(collectedResults, printer, it, averageTime, solutions, instance, mutatorName)
+            notifyResult(collectedResults, printer, it, averageTime, mutatorName)
         }
     }
 }.main(args)
@@ -87,20 +87,33 @@ private fun notifyResult(
         printer: SolutionPrinter,
         instanceSolution: InstanceSolution,
         averageTime: Double,
-        solutions: BestScoresSource,
-        instance: Instance,
         algorithm: String
 ) {
     val stats = collectedResults.stream().mapToDouble { it.first.score }.summaryStatistics()
-    printer.update(instanceSolution.name, algorithm, averageTime, stats.average, stats.min, stats.max, solutions[instance.name])
+    val quality = qualityStatistics(collectedResults, instanceSolution)
+    val bestScore = instanceSolution.solution.score
+    printer.update(
+            instanceSolution.name, algorithm,
+            averageTime,
+            stats.average, stats.min, stats.max,
+            bestScore,
+            quality.min, quality.average
+    )
 
     val attempts = collectedResults.map { (solution, progress) ->
         Attempt(solution.score, progress.steps)
     }
-    val score = Score(stats.average, stats.min, stats.max, solutions[instance.name])
+    val score = Score(stats.average, stats.min, stats.max, bestScore)
     val summary = Summary(instanceSolution.name, algorithm, averageTime, score, attempts)
     summary.save()
 }
+
+private fun qualityStatistics(collectedResults: List<Pair<SolutionProposal, Progress>>, instanceSolution: InstanceSolution) =
+        collectedResults
+                .map { LevenshteinSimilarityMeasurer.measure(it.first.sequence, instanceSolution.solution.sequence) }
+                .stream()
+                .mapToDouble { it.toDouble() }
+                .summaryStatistics()
 
 private fun solve(
         isBetter: SolutionComparator,
