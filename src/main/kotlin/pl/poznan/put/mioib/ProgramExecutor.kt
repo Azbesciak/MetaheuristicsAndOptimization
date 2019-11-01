@@ -16,6 +16,8 @@ class ProgramExecutor(private val task: Params.() -> Unit) : CliktCommand() {
     private val minDuration by option(help = "minimum execution time").default("PT1.0S")
     private val notImprovingSolutions by option(help = "max number of not improving solutions")
             .int().default(100).validate { it >= 0 }
+    private val dumpInterval by option(help = "how often inner solutions should be dumped")
+            .int().default(100).validate { it >= 0 }
     private val randomSeed by option(help = "random seed value").int().default(1234)
     private val solutionsToCollect by option(help = "number of solutions to collect").int().default(10)
     private val showProgress by option(help = "should show progress").default("false")
@@ -30,7 +32,8 @@ class ProgramExecutor(private val task: Params.() -> Unit) : CliktCommand() {
                 notImprovingSolutions = notImprovingSolutions,
                 randomSeed = randomSeed,
                 solutionsToCollect = solutionsToCollect,
-                showProgress = showProgress.toLowerCase() == "true"
+                showProgress = showProgress.toLowerCase() == "true",
+                dumpInterval = dumpInterval
         ).task()
     }
 }
@@ -44,5 +47,6 @@ data class Params(
         val notImprovingSolutions: Int,
         val randomSeed: Int,
         val solutionsToCollect: Int,
-        val showProgress: Boolean
+        val showProgress: Boolean,
+        val dumpInterval: Int
 )
