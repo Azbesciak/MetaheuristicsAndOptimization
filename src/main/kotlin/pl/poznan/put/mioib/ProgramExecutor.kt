@@ -15,7 +15,7 @@ class ProgramExecutor(private val task: Params.() -> Unit) : CliktCommand() {
     private val warmUp by option(help = "warm up iterations").int().default(0).validate { it >= 0 }
     private val minDuration by option(help = "minimum execution time").default("PT1.0S")
     private val notImprovingSolutions by option(help = "max number of not improving solutions")
-            .int().default(100).validate { it >= 0 }
+            .int().default(0).validate { it >= 0 }
     private val dumpInterval by option(help = "how often inner solutions should be dumped")
             .int().default(100).validate { it >= 0 }
     private val randomSeed by option(help = "random seed value").int().default(1234)
