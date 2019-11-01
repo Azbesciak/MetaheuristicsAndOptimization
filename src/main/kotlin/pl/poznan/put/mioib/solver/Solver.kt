@@ -14,8 +14,8 @@ object Solver {
             stopCondition: StopCondition,
             evaluator: SolutionEvaluator,
             mutator: SolutionMutator,
-            isBetter: SolutionComparator,
-            stepsSize: Int=100
+            progressDumpInterval: Int=100,
+            isBetter: SolutionComparator
     ): Pair<SolutionProposal, Progress> {
         val initialSequence = instance.locations.indices.toList().toIntArray()
         val steps = mutableListOf<Pair<Int, Double>>()
@@ -32,7 +32,7 @@ object Solver {
             if (isBetter(best, recentSolution)) {
                 best = recentSolution
             }
-            if (i++%stepsSize == 0){
+            if (i++%progressDumpInterval == 0){
                 steps.add(Pair(i, best.score))
             }
         }
