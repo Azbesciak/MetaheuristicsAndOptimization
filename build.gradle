@@ -49,6 +49,11 @@ dependencies {
             "org.junit.platform:junit-platform-runner:$junit5_plugin_version",
     )
     testCompile "com.nhaarman:mockito-kotlin:1.6.0"
+    implementation 'com.google.code.gson:gson:2.8.2'
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 compileKotlin {

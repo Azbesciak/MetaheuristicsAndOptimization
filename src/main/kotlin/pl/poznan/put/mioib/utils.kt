@@ -1,5 +1,9 @@
 package pl.poznan.put.mioib
 
+import com.google.gson.GsonBuilder
+import pl.poznan.put.mioib.report.Summary
+import java.io.File
+import java.lang.Exception
 import kotlin.random.Random
 
 val emptySignsRegex = "\\s+".toRegex()
@@ -25,6 +29,24 @@ fun IntArray.shuffle(random: Random = DEFAULT_RANDOM) {
     (size - 1 downTo 1).forEach { i ->
         val index = random.nextInt(i + 1)
         swap(i, index)
+    }
+}
+
+fun Summary.save(dir: String="summary"): String? {
+    return try {
+        val gson = GsonBuilder().setPrettyPrinting().create()
+        val jsonString = gson.toJson(this)
+        val filename = "${this.name}(${this.type}).sum"
+        val directory = File(dir)
+
+        directory.mkdirs()
+
+        File(directory, filename).writeText(jsonString)
+        "$directory/$filename"
+    }
+    catch (e: Exception){
+        print("Error: Couldn't save Summary\n$e")
+        null
     }
 }
 
