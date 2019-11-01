@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import pl.poznan.put.mioib.algorithm.weight.MIN_OR_EQUAL_SOLUTION_VALUE
+import pl.poznan.put.mioib.algorithm.weight.LOWER_OR_EQUAL_SOLUTION_VALUE
 import pl.poznan.put.mioib.algorithm.weight.SymmetricSolutionEvaluator
 import pl.poznan.put.mioib.algorithm.weight.WeightMatrix
 import pl.poznan.put.mioib.makeSymmetricMockWeightMatrix
@@ -35,7 +35,7 @@ internal class NearestNeighborMutatorTest {
     @ParameterizedTest
     @MethodSource("instances")
     fun `should connect the nearest not visited cities`(mat: WeightMatrix, start: Int, expected: SolutionProposal) {
-        val mutator = NearestNeighborMutator(mat, MIN_OR_EQUAL_SOLUTION_VALUE) { start }
+        val mutator = NearestNeighborMutator(mat, LOWER_OR_EQUAL_SOLUTION_VALUE) { start }
         val evaluator = SymmetricSolutionEvaluator(mat)
         val sequence = (expected.sequence.indices).toList().toIntArray()
         val proposalSolution = evaluator.solution(sequence)
