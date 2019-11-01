@@ -11,8 +11,8 @@ import java.time.Duration
 class ProgramExecutor(private val task: Params.() -> Unit) : CliktCommand() {
     private val instancePath by option(help = "Instance path without extension; may be shortcut").required()
     private val solutionValuesPath by option(help = "Solutions' values path").required()
-    private val minRetries by option(help = "min number of retries").int().default(100).validate { it >= 0 }
-    private val warmUp by option(help = "warm up iterations").int().default(100).validate { it >= 0 }
+    private val minRetries by option(help = "min number of retries").int().default(0).validate { it >= 0 }
+    private val warmUp by option(help = "warm up iterations").int().default(0).validate { it >= 0 }
     private val minDuration by option(help = "minimum execution time").default("PT1.0S")
     private val notImprovingSolutions by option(help = "max number of not improving solutions")
             .int().default(100).validate { it >= 0 }

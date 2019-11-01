@@ -5,6 +5,7 @@ import pl.poznan.put.mioib.algorithm.stopcondition.StopCondition
 import pl.poznan.put.mioib.algorithm.weight.SolutionComparator
 import pl.poznan.put.mioib.algorithm.weight.SolutionEvaluator
 import pl.poznan.put.mioib.model.Instance
+import pl.poznan.put.mioib.model.Progress
 import pl.poznan.put.mioib.model.SolutionProposal
 
 object Solver {
@@ -15,7 +16,7 @@ object Solver {
             mutator: SolutionMutator,
             isBetter: SolutionComparator,
             stepsSize: Int=100
-    ): SolutionProposal {
+    ): Pair<SolutionProposal, Progress> {
         val initialSequence = instance.locations.indices.toList().toIntArray()
         val steps = mutableListOf<Pair<Int, Double>>()
         var best = SolutionProposal(initialSequence, evaluator.solution(initialSequence))
@@ -30,13 +31,11 @@ object Solver {
             }
             if (isBetter(best, recentSolution)) {
                 best = recentSolution
-//                print("${best.score} ")
             }
             if (i++%stepsSize == 0){
                 steps.add(Pair(i, best.score))
             }
         }
-        best.steps = steps
-        return best
+        return Pair(best, Progress(steps))
     }
 }
