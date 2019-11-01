@@ -53,13 +53,15 @@ class SummaryChart(DefaultChart):
 class SeqChart(DefaultChart):
     def create_plt(self):
         attempts = self.json_data['attempts']
+        attempts_score = [x['score'] for x in attempts]
         scores = self.json_data['score']
-        std = statistics.stdev(attempts)
-
+        
+        std = statistics.stdev(attempts_score)
         x = range(len(attempts))
+
         plt.ylabel('Wynik')
         plt.title('Wyniki znalezionych rozwiązań')
-        plt.scatter(x, attempts)
+        plt.scatter(x, attempts_score)
 
         plt.axhline(y=scores['avg'], color='r', linestyle='-', label='avg')
 

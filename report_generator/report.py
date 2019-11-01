@@ -16,16 +16,19 @@ def generate():
 
     # Generate charts
     for f in sorted(glob('{}/*.sum'.format(args.path), recursive=True)):
-        with open(f) as json_file:
-            summary = json.load(json_file)
-            print(summary)
+        try:
+            with open(f) as json_file:
+                summary = json.load(json_file)
+                print(summary)
 
-            print('\\section{{{}}}'.format(summary['name']), file=output)
-            summary_report = charts.SummaryChart('summary', summary).generate()
-            print(summary_report, file=output)
+                print('\\section{{{}}}'.format(summary['name']), file=output)
+                summary_report = charts.SummaryChart('summary', summary).generate()
+                print(summary_report, file=output)
 
-            seq_report = charts.SeqChart('Początkowe vs Końcowe', summary).generate()
-            print(seq_report, file=output)
+                seq_report = charts.SeqChart('Wyniki ({} uruchomień)'.format(len(summary['attempts'])), summary).generate()
+                print(seq_report, file=output)
+        except Exception as e:
+            print("Error: Błąd generacji dla {}\n{}".format(f, str(e)))
 
     # Save output as Latex document
     with open(os.path.join(OUTPUT_DIR, 'report.tex'), 'w') as fd:
