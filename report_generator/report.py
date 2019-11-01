@@ -12,28 +12,41 @@ from zipfile import ZipFile
 OUTPUT_DIR='out'
 
 def generate():
-    output = StringIO()
+    instances = dict()
 
-    # Generate charts
+    # Load summary files to dict
     for f in sorted(glob('{}/*.sum'.format(args.path), recursive=True)):
-        try:
             with open(f) as json_file:
                 summary = json.load(json_file)
-                print(summary)
+                if summary['name'] not in instances:
+                    instances[summary['name']] = dict()
+                instances[summary['name']][summary['type']] = summary
 
-                print('\\section{{{}}}'.format(summary['name']), file=output)
+    # Generate charts
+    for instance in instances.keys():
+        output = StringIO()
+        print(instance)
+
+        try:
+            print('\\section{{{}}}'.format(instance), file=output)
+
+            for alg_type in instances[instance].keys(): 
+                summary = instances[instance][alg_type]
+                # print(summary)
+                print('\\subsection{{{}}}'.format(alg_type), file=output)
+
                 summary_report = charts.SummaryChart('summary', summary).generate()
                 print(summary_report, file=output)
 
                 seq_report = charts.SeqChart('Wyniki ({} uruchomień)'.format(len(summary['attempts'])), summary).generate()
                 print(seq_report, file=output)
-        except Exception as e:
-            print("Error: Błąd generacji dla {}\n{}".format(f, str(e)))
 
-    # Save output as Latex document
-    with open(os.path.join(OUTPUT_DIR, 'report.tex'), 'w') as fd:
-        output.seek(0)
-        shutil.copyfileobj(output, fd)
+            # Save output as Latex document
+            with open(os.path.join(OUTPUT_DIR, '{}.tex'.format(instance)), 'w') as fd:
+                output.seek(0)
+                shutil.copyfileobj(output, fd)
+        except Exception as e:
+            print("Error: Generacja {} nie powiodła się \n\t{}: {}".format(instance, type(e), e))
 
 
 parser = argparse.ArgumentParser()

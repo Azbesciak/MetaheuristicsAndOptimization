@@ -36,7 +36,7 @@ fun Summary.save(dir: String="summary"): String? {
     return try {
         val gson = GsonBuilder().setPrettyPrinting().create()
         val jsonString = gson.toJson(this)
-        val filename = "${this.name}.sum"
+        val filename = "${this.name}(${this.type}).sum"
         val directory = File(dir)
 
         directory.mkdirs()

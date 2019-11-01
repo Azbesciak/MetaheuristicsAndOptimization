@@ -59,7 +59,7 @@ fun main(args: Array<String>) = ProgramExecutor {
             val stats = collectedResults.stream().mapToDouble { it.first.score }.summaryStatistics()
             printer.update(it.name, averageTime, stats.average, stats.min, stats.max, solutions[instance.name])
 
-            val summary = Summary("${it.name} (${mutator.second})", averageTime, Score(stats.average, stats.min, stats.max, solutions[instance.name]),
+            val summary = Summary(it.name, mutator.second, averageTime, Score(stats.average, stats.min, stats.max, solutions[instance.name]),
                     collectedResults.map{s -> Attempt(s.first.score, s.second.steps)})
             summary.save()
         }
