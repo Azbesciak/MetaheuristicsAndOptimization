@@ -7,16 +7,12 @@ from glob import glob
 import charts
 from io import StringIO
 import shutil
-import templates
 from zipfile import ZipFile
 
 OUTPUT_DIR='out'
 
 def generate():
     output = StringIO()
-
-    # Put document intro
-    print(templates.INTRO, file=output)
 
     # Generate charts
     for f in sorted(glob('{}/*.sum'.format(args.path), recursive=True)):
@@ -30,9 +26,6 @@ def generate():
 
             seq_report = charts.SeqChart('Początkowe vs Końcowe', summary).generate()
             print(seq_report, file=output)
-
-    # Put document ending
-    print(templates.END, file=output)
 
     # Save output as Latex document
     with open(os.path.join(OUTPUT_DIR, 'report.tex'), 'w') as fd:
