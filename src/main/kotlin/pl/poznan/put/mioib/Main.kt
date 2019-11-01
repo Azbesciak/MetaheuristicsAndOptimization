@@ -37,11 +37,10 @@ fun main(args: Array<String>) = ProgramExecutor {
     ).read(instancePath)
     val printer = SolutionPrinter()
     printer.init()
-    val neighbourhoodExplorer = UpperTriangleNeighbourhoodExplorer
     instances.forEach {
         val random = Random(randomSeed)
-        val lsBrowser = GreedyNeighbourhoodBrowser(neighbourhoodExplorer, LOWER_SOLUTION_VALUE)
-        val stBrowser = SteepestNeighbourhoodBrowser(neighbourhoodExplorer, LOWER_SOLUTION_VALUE)
+        val lsBrowser = GreedyNeighbourhoodBrowser(LOWER_SOLUTION_VALUE)
+        val stBrowser = SteepestNeighbourhoodBrowser(LOWER_SOLUTION_VALUE)
 
         val instance = it.instance
         val weightMatrix = SymmetricWeightMatrix(instance, Euclides2DWeightCalculator)
