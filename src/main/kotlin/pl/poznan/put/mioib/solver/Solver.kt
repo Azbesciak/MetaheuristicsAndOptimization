@@ -36,6 +36,6 @@ object Solver {
                 steps.add(Pair(i, best.score))
             }
         }
-        return Pair(best, Progress(steps))
+        return best to Progress(steps)
     }
 }
