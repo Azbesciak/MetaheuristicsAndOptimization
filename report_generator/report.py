@@ -22,7 +22,29 @@ def generate():
                     instances[summary['name']] = dict()
                 instances[summary['name']][summary['type']] = summary
 
-    # Generate charts
+    # Generate global instances charts
+    try:
+        output = StringIO()
+
+        print('\\section{{Porównanie wyników}}', file=output)
+
+        max_scores = charts.CompareChart('Porównanie najlepszych wyników', instances, charts.CType.MIN, "Najlepsze wyniki").generate()
+        print(max_scores, file=output)
+
+        min_scores = charts.CompareChart('Porównanie najgorszych wyników', instances, charts.CType.MAX, "Najgorsze wyniki").generate()
+        print(min_scores, file=output)
+
+        avg_scores = charts.CompareChart('Porównanie średnich wyników', instances, charts.CType.AVG, "Średnie wyniki").generate()
+        print(avg_scores, file=output)
+
+        # Save output as Latex document
+        with open(os.path.join(OUTPUT_DIR, 'summary.tex'), 'w') as fd:
+            output.seek(0)
+            shutil.copyfileobj(output, fd)
+    except Exception as e:
+        print("Error: Generacja nie powiodła się \n\t{}: {}".format(type(e), e))
+
+    # Generate single instances charts
     for instance in instances.keys():
         output = StringIO()
         print(instance)
