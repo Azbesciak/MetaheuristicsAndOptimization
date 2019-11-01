@@ -1,8 +1,28 @@
 package pl.poznan.put.mioib
 
+import com.nhaarman.mockito_kotlin.doReturn
+import com.nhaarman.mockito_kotlin.mock
+import pl.poznan.put.mioib.algorithm.weight.WeightMatrix
 import pl.poznan.put.mioib.model.Weighting
 
+data class MatEntry(
+        val l1: Int,
+        val l2: Int,
+        val weight: Number
+)
+
+infix fun Pair<Int, Int>.weight(value: Number) = MatEntry(first, second, value)
+
+fun makeSymmetricMockWeightMatrix(vararg entries: MatEntry) = mock<WeightMatrix> {
+    fun makePair(from: Int, to: Int, value: Double) {
+        on { get(from, to) } doReturn value
+        on { get(to, from) } doReturn value
+    }
+    entries.forEach { makePair(it.l1, it.l2, it.weight.toDouble()) }
+}
+
 const val TEST_INSTANCES_ROOT = "./src/test/resources/instances"
+
 class TestInstance(val id: String, val weight: Weighting, instance: String, solution: String) {
     val path = "$TEST_INSTANCES_ROOT/$id"
     val instance = instance.trimIndent().lines()
