@@ -16,12 +16,13 @@ class CType(Enum):
         AVG_STEPS = 'avg_steps'
 
 class DefaultChart:
-    def __init__(self, name, json_data):
+    def __init__(self, name, json_data, chart_type='default'):
         plt.clf()
+        self.chart_type = chart_type
         self.json_data = json_data
         self.name = name
         self.plt = self.create_plt()
-        self.dir_path = re.sub(r'[ĘÓĄŚŁŻŹĆŃęóąśłżźćń ]', '', 'imgs/{}'.format(name))
+        self.dir_path = re.sub(r'[ĘÓĄŚŁŻŹĆŃęóąśłżźćń ]', '', 'imgs/')
         self.file_path = None
 
     def create_plt(self):
@@ -43,9 +44,9 @@ class DefaultChart:
 '''
 
 class SingleInstanceChart(DefaultChart):
-    def __init__(self, name, json_data):
-        super().__init__(name, json_data)
-        self.file_path = '{}/{}.png'.format(self.dir_path, self.json_data['name'])
+    def __init__(self, name, json_data, chart_type="single"):
+        super().__init__(name, json_data, chart_type)
+        self.file_path = '{}/{}{}.png'.format(self.dir_path, self.json_data['name'], self.chart_type)
 
 
 class CompareChart(DefaultChart):
@@ -55,7 +56,7 @@ class CompareChart(DefaultChart):
         self.alg_types = alg_types
 
         super().__init__(name, json_data)
-        self.file_path = '{}/{}.png'.format(self.dir_path, 'img')
+        self.file_path = '{}/{}{}.png'.format(self.dir_path, 'compare', self.ctype.value)
 
 
     def __get_best_times(self):
@@ -123,7 +124,7 @@ class CompareChart(DefaultChart):
         plt.legend()
         plt.ylabel('Wynik')
         plt.title(self.title)
-        plt.show()
+        # plt.show()
 
         return plt
 
