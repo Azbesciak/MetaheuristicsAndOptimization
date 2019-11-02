@@ -24,60 +24,46 @@ def generate():
 
     # Generate global instances charts
     try:
-        output = StringIO()
+        max_scores = charts.CompareChart('best_cmp', "Najlepsze wyniki", instances, charts.CType.MIN).generate()
 
-        print('\\section{{Porównanie wyników}}', file=output)
+        min_scores = charts.CompareChart('worst_cmp',  "Najgorsze wyniki", instances, charts.CType.MAX).generate()
 
-        max_scores = charts.CompareChart('Porównanie najlepszych wyników', instances, charts.CType.MIN, "Najlepsze wyniki").generate()
-        print(max_scores, file=output)
-
-        min_scores = charts.CompareChart('Porównanie najgorszych wyników', instances, charts.CType.MAX, "Najgorsze wyniki").generate()
-        print(min_scores, file=output)
-
-        avg_scores = charts.CompareChart('Porównanie średnich wyników', instances, charts.CType.AVG, "Średnie wyniki").generate()
-        print(avg_scores, file=output)
+        avg_scores = charts.CompareChart('avg_cmp', "Średnie wyniki", instances, charts.CType.AVG).generate()
         
-        avg_times = charts.CompareChart('Porównanie czasów działania', instances, charts.CType.TIME, "Czasy").generate()
-        print(avg_times, file=output)
+        avg_times = charts.CompareChart('times_cmp', "Czasy", instances, charts.CType.TIME).generate()
 
-        efiiciency = charts.CompareChart('Efektywność', instances, charts.CType.TIME_EFF, "Efektywność", alg_types=['Greedy', "Steepest"]).generate()
-        print(efiiciency, file=output)
+        efiiciency = charts.CompareChart('efficiency_cmp', "Efektywność", instances, charts.CType.TIME_EFF, alg_types=['Greedy', "Steepest"]).generate()
 
-        avg_steps = charts.CompareChart('Średnia liczba kroków dla GS', instances, charts.CType.AVG_STEPS, "Kroki", alg_types=['Greedy', "Steepest"]).generate()
-        print(avg_steps, file=output)
+        avg_steps = charts.CompareChart('steps_cmp', "Kroki", instances, charts.CType.AVG_STEPS, alg_types=['Greedy', "Steepest"]).generate()
 
-        # Save output as Latex document
-        with open(os.path.join(OUTPUT_DIR, 'summary.tex'), 'w') as fd:
-            output.seek(0)
-            shutil.copyfileobj(output, fd)
     except Exception as e:
         print("Error: Generacja nie powiodła się \n\t{}: {}".format(type(e), e))
 
     # Generate single instances charts
-    for instance in instances.keys():
-        output = StringIO()
-        print(instance)
+    # for instance in instances.keys():
+    #     output = StringIO()
+    #     print(instance)
 
-        try:
-            print('\\section{{{}}}'.format(instance), file=output)
+    #     try:
+    #         print('\\section{{{}}}'.format(instance), file=output)
 
-            for alg_type in instances[instance].keys(): 
-                summary = instances[instance][alg_type]
-                # print(summary)
-                print('\\subsection{{{}}}'.format(alg_type), file=output)
+    #         for alg_type in instances[instance].keys(): 
+    #             summary = instances[instance][alg_type]
+    #             # print(summary)
+    #             print('\\subsection{{{}}}'.format(alg_type), file=output)
 
-                summary_report = charts.SummaryChart('summary', summary).generate()
-                print(summary_report, file=output)
+    #             summary_report = charts.SummaryChart('summary', summary).generate()
+    #             print(summary_report, file=output)
 
-                seq_report = charts.SeqChart('Wyniki ({} uruchomień)'.format(len(summary['attempts'])), summary).generate()
-                print(seq_report, file=output)
+    #             seq_report = charts.SeqChart('Wyniki ({} uruchomień)'.format(len(summary['attempts'])), summary).generate()
+    #             print(seq_report, file=output)
 
-            # Save output as Latex document
-            with open(os.path.join(OUTPUT_DIR, '{}.tex'.format(instance)), 'w') as fd:
-                output.seek(0)
-                shutil.copyfileobj(output, fd)
-        except Exception as e:
-            print("Error: Generacja {} nie powiodła się \n\t{}: {}".format(instance, type(e), e))
+    #         # Save output as Latex document
+    #         with open(os.path.join(OUTPUT_DIR, '{}.tex'.format(instance)), 'w') as fd:
+    #             output.seek(0)
+    #             shutil.copyfileobj(output, fd)
+    #     except Exception as e:
+    #         print("Error: Generacja {} nie powiodła się \n\t{}: {}".format(instance, type(e), e))
 
 
 parser = argparse.ArgumentParser()

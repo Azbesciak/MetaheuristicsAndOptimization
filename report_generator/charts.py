@@ -4,8 +4,11 @@ from matplotlib import pyplot as plt
 import re
 from enum import Enum
 import statistics
+from io import StringIO
+import shutil
 
 MARKERS = ['s', 'o', '*', 'p', 'x', 'D']
+OUTPUT_DIR='out'
 
 class CType(Enum):
         MAX = 'max'
@@ -16,14 +19,17 @@ class CType(Enum):
         AVG_STEPS = 'avg_steps'
 
 class DefaultChart:
-    def __init__(self, name, json_data, chart_type='default'):
+    def __init__(self, name, title, json_data, chart_type='default', save=True):
         plt.clf()
+        self.title = title
         self.chart_type = chart_type
         self.json_data = json_data
         self.name = name
         self.plt = self.create_plt()
         self.dir_path = re.sub(r'[ĘÓĄŚŁŻŹĆŃęóąśłżźćń ]', '', 'imgs/')
         self.file_path = None
+        self.output = StringIO()
+        self.save = save
 
     def create_plt(self):
         raise NotImplementedError
@@ -36,26 +42,33 @@ class DefaultChart:
         
         self.plt.savefig(os.path.join('out', self.file_path))
 
-        return R'''
+        tex = R'''
 \begin{figure}[H]
 \includegraphics[width=\columnwidth]{''' + self.file_path + '''}
-\caption{''' + self.name + '''}
+\caption{''' + self.title + '''}
 \end{figure}
 '''
+        print(tex, file=self.output)
+
+        if self.save:
+            with open(os.path.join(OUTPUT_DIR, '{}.tex').format(self.name), 'w') as fd:
+                self.output.seek(0)
+                shutil.copyfileobj(self.output, fd)
+
+        return tex
 
 class SingleInstanceChart(DefaultChart):
-    def __init__(self, name, json_data, chart_type="single"):
-        super().__init__(name, json_data, chart_type)
+    def __init__(self, name, title, json_data, chart_type="single"):
+        super().__init__(name, title. json_data, chart_type)
         self.file_path = '{}/{}{}.png'.format(self.dir_path, self.json_data['name'], self.chart_type)
 
 
 class CompareChart(DefaultChart):
-    def __init__(self, name, json_data, ctype, title, alg_types=None):
-        self.title = title
+    def __init__(self, name, title, json_data, ctype, alg_types=None):
         self.ctype = ctype
         self.alg_types = alg_types
 
-        super().__init__(name, json_data)
+        super().__init__(name, title, json_data)
         self.file_path = '{}/{}{}.png'.format(self.dir_path, 'compare', self.ctype.value)
 
 
@@ -123,7 +136,7 @@ class CompareChart(DefaultChart):
         plt.xticks(rotation=90)
         plt.legend()
         plt.ylabel('Wynik')
-        plt.title(self.title)
+        # plt.title(self.title)
         # plt.show()
 
         return plt
