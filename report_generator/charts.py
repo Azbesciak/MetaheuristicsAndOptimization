@@ -44,11 +44,13 @@ class CType(Enum):
         MIN = 'min'
         AVG = 'avg'
         TIME = 'averageTime'
+        AVG_STEPS = 'avg_steps'
 
 class CompareChart(DefaultChart):
-    def __init__(self, name, json_data, ctype, title):
+    def __init__(self, name, json_data, ctype, title, alg_types=None):
         self.title = title
         self.ctype = ctype
+        self.alg_types = alg_types
 
         super().__init__(name, json_data)
         self.file_path = '{}/{}.png'.format(self.dir_path, 'img')
@@ -61,32 +63,44 @@ class CompareChart(DefaultChart):
 
         for alg in next(iter(self.json_data.values())):
 
-            if self.ctype in ([CType.AVG, CType.MAX, CType.MIN]):
-                scores = [x[alg]['score'][self.ctype.value] for x in self.json_data.values()]
-                originals = [x[alg]['score']['original'] for x in self.json_data.values()]
+            # plot only selected algorithms (default all)
+            if self.alg_types is None or alg in self.alg_types:
+                if self.ctype in ([CType.AVG, CType.MAX, CType.MIN]):
+                    scores = [x[alg]['score'][self.ctype.value] for x in self.json_data.values()]
+                    originals = [x[alg]['score']['original'] for x in self.json_data.values()]
+                    
+                    y = [x/y for x, y in zip(originals, scores)]
+
+                    if self.ctype == CType.AVG:
+                        attempts = [x[alg]['attempts'] for x in self.json_data.values()]
+                        e = []
+                        for a in attempts:
+                            x = [x['score'] for x in a]
+                            e.append(0 if len(x) < 2 else statistics.stdev(x))
+
+                        e = [x/y for x, y in zip(e, originals)]
+
+                        plt.errorbar(labels, y, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=MARKERS[i], label=alg) #, uplims=True, lolims=True)
+                    else:
+                        plt.scatter(labels, y, marker=MARKERS[i], label=alg)
+                    plt.ylim(0.0, 1.2) # todo: erase 0.0 
                 
-                y = [x/y for x, y in zip(originals, scores)]
-
-                if self.ctype == CType.AVG:
-                    attempts = [x[alg]['attempts'] for x in self.json_data.values()]
-                    e = []
-                    for a in attempts:
-                        x = [x['score'] for x in a]
-                        e.append(0 if len(x) < 2 else statistics.stdev(x))
-
-                    e = [x/y for x, y in zip(e, originals)]
-
-                    plt.errorbar(labels, y, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=MARKERS[i], label=alg) #, uplims=True, lolims=True)
-                else:
+                elif self.ctype == CType.TIME:
+                    y = [x[alg]['averageTime'] for x in self.json_data.values()]
                     plt.scatter(labels, y, marker=MARKERS[i], label=alg)
-                plt.ylim(0.0, 1.2) # todo: erase 0.0 
-            
-            elif self.ctype == CType.TIME:
-                y = [x[alg]['averageTime'] for x in self.json_data.values()]
-                plt.scatter(labels, y, marker=MARKERS[i], label=alg)
+
+                elif self.ctype == CType.AVG_STEPS:
+                    attempts = [x[alg]['attempts'] for x in self.json_data.values()]
+                    steps = []
+                    for a in attempts:
+                        x = [x['steps'][-1]['first'] for x in a]
+                        steps.append(x)
+                    y = [statistics.mean(x) for x in steps]
+                    e = [0 if len(x) < 2 else statistics.stdev(x) for x in steps]
+                    plt.errorbar(labels, y, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=MARKERS[i], label=alg)
 
 
-            i += 1
+                i += 1
 
         plt.xticks(rotation=90)
         plt.legend()
