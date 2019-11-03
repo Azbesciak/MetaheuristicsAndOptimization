@@ -10,6 +10,15 @@ import shutil
 MARKERS = ['s', 'o', '*', 'p', 'x', 'D']
 OUTPUT_DIR='out'
 
+def generate(name, title, instances, chart_type, alg_types=None):
+    COMPARE_TYPES = [CType.MAX, CType.MIN, CType.AVG, CType.TIME, CType.TIME_EFF, CType.AVG_STEPS]
+
+    if chart_type in COMPARE_TYPES:
+        return CompareChart(name, title, instances, chart_type, alg_types).generate()
+    else:
+        return SingleInstanceChart(name, title, instances, chart_type, alg_types).generate()
+
+
 class CType(Enum):
         MAX = 'max'
         MIN = 'min'
@@ -17,6 +26,9 @@ class CType(Enum):
         TIME = 'averageTime'
         TIME_EFF = 'efficiencyInTime'
         AVG_STEPS = 'avg_steps'
+        PROGRESS = 'progress'
+        RESTARTS = 'restarts'
+
 
 class DefaultChart:
     def __init__(self, name, title, json_data, chart_type='default', save=True):
@@ -57,10 +69,33 @@ class DefaultChart:
 
         return tex
 
+
 class SingleInstanceChart(DefaultChart):
-    def __init__(self, name, title, json_data, chart_type="single"):
-        super().__init__(name, title. json_data, chart_type)
+    def __init__(self, name, title, json_data, chart_type="single", alg_types=None):
+        super().__init__(name, title, json_data, chart_type)
         self.file_path = '{}/{}{}.png'.format(self.dir_path, self.json_data['name'], self.chart_type)
+
+    def __plot_restarts(self):
+        attempts = self.json_data['attempts']
+        attempts_score = [x['score'] for x in attempts]
+        scores = self.json_data['score']
+
+        std = 0 if len(attempts_score) < 2 else statistics.stdev(attempts_score)
+        x = range(len(attempts))
+
+        plt.ylabel('Wynik')
+        plt.scatter(x, attempts_score)
+
+        plt.axhline(y=scores['avg'], color='r', linestyle='-', label='avg')
+
+        plt.axhline(y=scores['avg']-std, color='orange', linestyle='--', label='avg')
+        plt.axhline(y=scores['avg']+std, color='orange', linestyle='--', label='avg')
+
+    def create_plt(self):
+        if self.chart_type == CType.RESTARTS:
+            self.__plot_restarts()
+        
+        return plt
 
 
 class CompareChart(DefaultChart):
@@ -69,7 +104,7 @@ class CompareChart(DefaultChart):
         self.alg_types = alg_types
         self.opacity = opacity
 
-        super().__init__(name, title, json_data)
+        super().__init__(name, title, json_data, ctype)
         self.file_path = '{}/{}{}.png'.format(self.dir_path, 'compare', self.ctype.value)
 
 
@@ -169,6 +204,7 @@ class SummaryChart(SingleInstanceChart):
         plt.title('Scores')
 
         return plt
+
 
 class SeqChart(SingleInstanceChart):
     def create_plt(self):
