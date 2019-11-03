@@ -73,7 +73,7 @@ class DefaultChart:
 class SingleInstanceChart(DefaultChart):
     def __init__(self, name, title, json_data, chart_type="single", alg_types=None):
         super().__init__(name, title, json_data, chart_type)
-        self.file_path = '{}/{}{}.png'.format(self.dir_path, self.json_data['name'], self.chart_type)
+        self.file_path = '{}/{}{}.png'.format(self.dir_path, self.json_data['name'], self.name)
 
     def __plot_restarts(self):
         attempts = self.json_data['attempts']
@@ -91,9 +91,30 @@ class SingleInstanceChart(DefaultChart):
         plt.axhline(y=scores['avg']-std, color='orange', linestyle='--', label='avg')
         plt.axhline(y=scores['avg']+std, color='orange', linestyle='--', label='avg')
 
+    def __plot_progress(self):
+        attempts = self.json_data['attempts']
+        attempts_steps = [x['steps'] for x in attempts]
+
+        scores = []
+        ox = []
+
+        for attempt_steps in attempts_steps:
+            ox.append([x['first'] for x in attempt_steps])
+            scores.append([x['second'] for x in attempt_steps])
+
+        scores = zip(*scores)
+        scores = [statistics.mean(x) for x in scores]
+
+        ox = zip(*ox)
+        ox = [x[0] for x in ox]
+
+        plt.scatter(ox, scores)
+
     def create_plt(self):
         if self.chart_type == CType.RESTARTS:
             self.__plot_restarts()
+        if self.chart_type == CType.PROGRESS:
+            self.__plot_progress()
         
         return plt
 

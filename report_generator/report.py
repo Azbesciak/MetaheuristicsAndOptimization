@@ -43,13 +43,18 @@ def generate():
     for instance in instances.keys():
         print(instance)
 
-        # try:
-        for alg_type in instances[instance].keys(): 
-            summary = instances[instance][alg_type]
-            charts.generate("restarts_{}".format(instance), "Restarty", summary, charts.CType.RESTARTS)
+        try:
+            for alg_type in instances[instance].keys(): 
 
-        # except Exception as e:
-        #     print("Error: Generacja {} nie powiodła się \n\t{}: {}".format(instance, type(e), e))
+                if alg_type in ['Greedy', 'Steepest']:
+                    summary = instances[instance][alg_type]
+
+                    charts.generate("_restarts_{}".format(alg_type), "Restarty", summary, charts.CType.RESTARTS)
+
+                    charts.generate("_progress_{}".format(alg_type), "Restarty", summary, charts.CType.PROGRESS)
+
+        except Exception as e:
+            print("Error: Generacja {} nie powiodła się \n\t{}: {}".format(instance, type(e), e))
 
 
 parser = argparse.ArgumentParser()
