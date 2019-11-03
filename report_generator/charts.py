@@ -26,7 +26,7 @@ class DefaultChart:
         self.json_data = json_data
         self.name = name
         self.plt = self.create_plt()
-        self.dir_path = re.sub(r'[ĘÓĄŚŁŻŹĆŃęóąśłżźćń ]', '', 'imgs/')
+        self.dir_path = re.sub(r'[ĘÓĄŚŁŻŹĆŃęóąśłżźćń ]', '', 'pics/')
         self.file_path = None
         self.output = StringIO()
         self.save = save
@@ -64,9 +64,10 @@ class SingleInstanceChart(DefaultChart):
 
 
 class CompareChart(DefaultChart):
-    def __init__(self, name, title, json_data, ctype, alg_types=None):
+    def __init__(self, name, title, json_data, ctype, alg_types=None, opacity=0.7):
         self.ctype = ctype
         self.alg_types = alg_types
+        self.opacity = opacity
 
         super().__init__(name, title, json_data)
         self.file_path = '{}/{}{}.png'.format(self.dir_path, 'compare', self.ctype.value)
@@ -82,54 +83,66 @@ class CompareChart(DefaultChart):
         best_times = [min(x) for x in best_times]
         return best_times
 
-    def create_plt(self):
-        labels = (self.json_data.keys())
-        x = np.arange(len(labels))
-        i = 0
+    def __plot_scores(self, alg, marker):
+        scores = [x[alg]['score'][self.ctype.value] for x in self.json_data.values()]
+        y = [x/y for x, y in zip(self.originals, scores)]
 
-        best_times = self.__get_best_times()
+        if self.ctype == CType.AVG:
+            e = []
+            for a in self.attempts:
+                x = [x['score'] for x in a]
+                e.append(0 if len(x) < 2 else statistics.stdev(x))
+
+            e = [x/y for x, y in zip(e, self.originals)]
+
+            plt.errorbar(self.labels, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=marker, label=alg) #, uplims=True, lolims=True)
+        else:
+            plt.scatter(self.labels, y, marker=marker, label=alg)
+        plt.ylim(0.0, 1.2) # todo: erase 0.0 
+
+    def __plot_times(self, alg, marker):
+        y = self.times
+        plt.scatter(self.labels, y, marker=marker, label=alg)
+
+    def __plot_steps(self, alg, marker):
+        steps = []
+        for a in self.attempts:
+            x = [x['steps'][-1]['first'] for x in a]
+            steps.append(x)
+        y = [statistics.mean(x) for x in steps]
+        e = [0 if len(x) < 2 else statistics.stdev(x) for x in steps]
+        plt.errorbar(self.labels, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=marker, label=alg)
+
+    def __plot_efficiency(self, alg, marker):
+        scores = [x[alg]['score']['avg'] for x in self.json_data.values()]
+        efficiency = [(best/avg/(time/best_time)) for best, avg, time, best_time in zip(self.originals, scores, self.times, self.best_times)]
+        plt.scatter(self.labels, efficiency, marker=marker, label=alg)
+
+    def create_plt(self):
+        self.labels = (self.json_data.keys())
+        self.best_times = self.__get_best_times()
+
+        x = np.arange(len(self.labels))
+        i = 0
 
         for alg in next(iter(self.json_data.values())):
             # plot only selected algorithms (default all)
             if self.alg_types is None or alg in self.alg_types:
-                originals = [x[alg]['score']['original'] for x in self.json_data.values()]
-                attempts = [x[alg]['attempts'] for x in self.json_data.values()]
-                times = [x[alg]['averageTime'] for x in self.json_data.values()]
+                self.originals = [x[alg]['score']['original'] for x in self.json_data.values()]
+                self.attempts = [x[alg]['attempts'] for x in self.json_data.values()]
+                self.times = [x[alg]['averageTime'] for x in self.json_data.values()]
 
                 if self.ctype in ([CType.AVG, CType.MAX, CType.MIN]): 
-                    scores = [x[alg]['score'][self.ctype.value] for x in self.json_data.values()]
-                    y = [x/y for x, y in zip(originals, scores)]
-
-                    if self.ctype == CType.AVG:
-                        e = []
-                        for a in attempts:
-                            x = [x['score'] for x in a]
-                            e.append(0 if len(x) < 2 else statistics.stdev(x))
-
-                        e = [x/y for x, y in zip(e, originals)]
-
-                        plt.errorbar(labels, y, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=MARKERS[i], label=alg) #, uplims=True, lolims=True)
-                    else:
-                        plt.scatter(labels, y, marker=MARKERS[i], label=alg)
-                    plt.ylim(0.0, 1.2) # todo: erase 0.0 
+                    self.__plot_scores(alg, MARKERS[i])
                 
                 elif self.ctype == CType.TIME:
-                    y = times
-                    plt.scatter(labels, y, marker=MARKERS[i], label=alg)
+                    self.__plot_times(alg, MARKERS[i])
 
                 elif self.ctype == CType.AVG_STEPS:
-                    steps = []
-                    for a in attempts:
-                        x = [x['steps'][-1]['first'] for x in a]
-                        steps.append(x)
-                    y = [statistics.mean(x) for x in steps]
-                    e = [0 if len(x) < 2 else statistics.stdev(x) for x in steps]
-                    plt.errorbar(labels, y, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=MARKERS[i], label=alg)
+                    self.__plot_steps(alg, MARKERS[i])
 
                 elif self.ctype == CType.TIME_EFF:
-                    scores = [x[alg]['score']['avg'] for x in self.json_data.values()]
-                    efficiency = [(best/avg/(time/best_time)) for best, avg, time, best_time in zip(originals, scores, times, best_times)]
-                    plt.scatter(labels, efficiency, marker=MARKERS[i], label=alg)
+                    self.__plot_efficiency(alg, MARKERS[i])
 
                 i += 1
 
