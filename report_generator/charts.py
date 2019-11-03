@@ -189,6 +189,7 @@ class CompareChart(DefaultChart):
         y = self.times
         plt.scatter(self.labels, y, marker=marker, label=alg)
         self.xlabel = 'Średni czas działania'
+        plt.yscale('log')
 
     def __plot_steps(self, alg, marker):
         steps = []
@@ -199,6 +200,7 @@ class CompareChart(DefaultChart):
         e = [0 if len(x) < 2 else statistics.stdev(x) for x in steps]
         plt.errorbar(self.labels, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=marker, label=alg)
         self.xlabel = 'Średnia liczba kroków algorytmu'
+        plt.yscale('log')
 
     def __plot_efficiency(self, alg, marker):
         scores = [x[alg]['score']['avg'] for x in self.json_data.values()]
