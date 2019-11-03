@@ -31,8 +31,11 @@ class CType(Enum):
 
 
 class DefaultChart:
-    def __init__(self, name, title, json_data, chart_type='default', save=True):
+    def __init__(self, name, title, json_data, chart_type='default', save=True, ylabel=None, xlabel=None):
         plt.clf()
+
+        self.xlabel = xlabel
+        self.ylabel = ylabel
         self.title = title
         self.chart_type = chart_type
         self.json_data = json_data
@@ -47,12 +50,15 @@ class DefaultChart:
         raise NotImplementedError
 
     def generate(self):
+        plt.xlabel(self.ylabel)
+        plt.ylabel(self.xlabel)
+
         out_path = os.path.join('out', self.file_path)
 
         if not os.path.exists(os.path.join('out', self.dir_path)):
             os.makedirs(os.path.join('out', self.dir_path))
         
-        self.plt.savefig(os.path.join('out', self.file_path))
+        self.plt.savefig(os.path.join('out', self.file_path), bbox_inches='tight')
 
         tex = R'''
 \begin{figure}[H]
@@ -71,11 +77,14 @@ class DefaultChart:
 
 
 class SingleInstanceChart(DefaultChart):
-    def __init__(self, name, title, json_data, chart_type="single", alg_types=None):
-        super().__init__(name, title, json_data, chart_type)
+    def __init__(self, name, title, json_data, chart_type="single", alg_types=None, xlabel=None, ylabel=None):
+        super().__init__(name, title, json_data, chart_type, xlabel=xlabel, ylabel=ylabel)
         self.file_path = '{}/{}{}.png'.format(self.dir_path, self.json_data['name'], self.name)
 
     def __plot_restarts(self):
+        self.ylabel = 'Liczba restartów'
+        self.xlabel = 'Łączny koszt przejazdu'
+
         attempts = self.json_data['attempts']
         attempts_score = [x['score'] for x in attempts]
         scores = self.json_data['score']
@@ -92,6 +101,9 @@ class SingleInstanceChart(DefaultChart):
         plt.axhline(y=scores['avg']+std, color='orange', linestyle='--', label='avg')
 
     def __plot_progress(self):
+        self.ylabel = 'Liczba powtórzeń'
+        self.xlabel = 'Łączny koszt przejazdu'
+
         attempts = self.json_data['attempts']
         attempts_steps = [x['steps'] for x in attempts]
 
@@ -110,8 +122,13 @@ class SingleInstanceChart(DefaultChart):
 
         plt.scatter(ox, scores)
 
+# Add stdev
+        # e = [statistics.stdev(x) for x in scores]
+        # plt.errorbar(ox, scores, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none') # marker=marker, label=alg)
+
     def create_plt(self):
         if self.chart_type == CType.RESTARTS:
+        # plt.errorbar(ox, scores, capsize=4, capth
             self.__plot_restarts()
         if self.chart_type == CType.PROGRESS:
             self.__plot_progress()
@@ -120,12 +137,12 @@ class SingleInstanceChart(DefaultChart):
 
 
 class CompareChart(DefaultChart):
-    def __init__(self, name, title, json_data, ctype, alg_types=None, opacity=0.7):
+    def __init__(self, name, title, json_data, ctype, alg_types=None, opacity=0.7, ylabel=None, xlabel=None):
         self.ctype = ctype
         self.alg_types = alg_types
         self.opacity = opacity
 
-        super().__init__(name, title, json_data, ctype)
+        super().__init__(name, title, json_data, ctype, xlabel=xlabel, ylabel=ylabel)
         self.file_path = '{}/{}{}.png'.format(self.dir_path, 'compare', self.ctype.value)
 
 
@@ -144,6 +161,7 @@ class CompareChart(DefaultChart):
         y = [x/y for x, y in zip(self.originals, scores)]
 
         if self.ctype == CType.AVG:
+            self.xlabel = 'Średni koszt przejazdu'
             e = []
             for a in self.attempts:
                 x = [x['score'] for x in a]
@@ -154,11 +172,18 @@ class CompareChart(DefaultChart):
             plt.errorbar(self.labels, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=marker, label=alg) #, uplims=True, lolims=True)
         else:
             plt.scatter(self.labels, y, marker=marker, label=alg)
+
+        if self.ctype == CType.MAX:
+            self.xlabel = 'Maksymalny koszt przejazdu'
+        elif self.ctype == CType.MIN:
+            self.xlabel = 'Minimalny koszt przejazdu'
+        
         plt.ylim(0.0, 1.2) # todo: erase 0.0 
 
     def __plot_times(self, alg, marker):
         y = self.times
         plt.scatter(self.labels, y, marker=marker, label=alg)
+        self.xlabel = 'Średni czas działania'
 
     def __plot_steps(self, alg, marker):
         steps = []
@@ -168,11 +193,13 @@ class CompareChart(DefaultChart):
         y = [statistics.mean(x) for x in steps]
         e = [0 if len(x) < 2 else statistics.stdev(x) for x in steps]
         plt.errorbar(self.labels, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=marker, label=alg)
+        self.xlabel = 'Średnia liczba kroków algorytmu'
 
     def __plot_efficiency(self, alg, marker):
         scores = [x[alg]['score']['avg'] for x in self.json_data.values()]
         efficiency = [(best/avg/(time/best_time)) for best, avg, time, best_time in zip(self.originals, scores, self.times, self.best_times)]
         plt.scatter(self.labels, efficiency, marker=marker, label=alg)
+        self.xlabel = 'Efektywność algorytmu'
 
     def create_plt(self):
         self.labels = (self.json_data.keys())
@@ -204,45 +231,9 @@ class CompareChart(DefaultChart):
 
         plt.xticks(rotation=90)
         plt.legend()
-        plt.ylabel('Wynik')
+        self.ylabel = 'Nazwa wczytanej instancji'
+        
         # plt.title(self.title)
         # plt.show()
-
-        return plt
-
-
-class SummaryChart(SingleInstanceChart):
-    def create_plt(self):
-        labels = ('Avg', 'Min', 'Max', 'Origin')
-        attempts = self.json_data['attempts']
-        y_pos = np.arange(len(labels))
-        scores = self.json_data['score']
-        performance = [scores['avg'], scores['min'], scores['max'], scores['original']]
-
-        plt.bar(y_pos, performance, align='center', alpha=0.5)
-        plt.xticks(y_pos, labels)
-        plt.ylabel('Wynik')
-        plt.title('Scores')
-
-        return plt
-
-
-class SeqChart(SingleInstanceChart):
-    def create_plt(self):
-        attempts = self.json_data['attempts']
-        attempts_score = [x['score'] for x in attempts]
-        scores = self.json_data['score']
-        
-        std = statistics.stdev(attempts_score)
-        x = range(len(attempts))
-
-        plt.ylabel('Wynik')
-        plt.title('Wyniki znalezionych rozwiązań')
-        plt.scatter(x, attempts_score)
-
-        plt.axhline(y=scores['avg'], color='r', linestyle='-', label='avg')
-
-        plt.axhline(y=scores['avg']-std, color='orange', linestyle='--', label='avg')
-        plt.axhline(y=scores['avg']+std, color='orange', linestyle='--', label='avg')
 
         return plt
