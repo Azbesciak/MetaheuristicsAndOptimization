@@ -6,6 +6,7 @@ from enum import Enum
 import statistics
 from io import StringIO
 import shutil
+import copy
 
 MARKERS = ['s', 'o', '*', 'p', 'x', 'D']
 OUTPUT_DIR='out'
@@ -52,6 +53,7 @@ class DefaultChart:
     def generate(self):
         plt.xlabel(self.ylabel)
         plt.ylabel(self.xlabel)
+        plt.legend()
 
         out_path = os.path.join('out', self.file_path)
 
@@ -93,12 +95,14 @@ class SingleInstanceChart(DefaultChart):
         x = range(len(attempts))
 
         plt.ylabel('Wynik')
-        plt.scatter(x, attempts_score)
+        plt.scatter(x, attempts_score, label=self.json_data['type'])
 
-        plt.axhline(y=scores['avg'], color='r', linestyle='-', label='avg')
+        plt.axhline(y=scores['avg'], color='r', linestyle='-', label='Avg')
 
-        plt.axhline(y=scores['avg']-std, color='orange', linestyle='--', label='avg')
-        plt.axhline(y=scores['avg']+std, color='orange', linestyle='--', label='avg')
+        plt.axhline(y=scores['avg']-std, color='orange', linestyle='--', label='Std')
+        plt.axhline(y=scores['avg']+std, color='orange', linestyle='--')
+
+        plt.axhline(y=min(attempts_score), color='green', linestyle=':', label="Najlepszy wynik")
 
     def __plot_progress(self):
         self.ylabel = 'Liczba powtórzeń'
@@ -115,16 +119,17 @@ class SingleInstanceChart(DefaultChart):
             scores.append([x['second'] for x in attempt_steps])
 
         scores = zip(*scores)
+        e = copy.deepcopy(scores)
         scores = [statistics.mean(x) for x in scores]
+
+        e = [0 if len(x) < 2 else statistics.stdev(x) for x in e]
 
         ox = zip(*ox)
         ox = [x[0] for x in ox]
 
-        plt.scatter(ox, scores)
-
-# Add stdev
+        # plt.scatter(ox, scores)
         # e = [statistics.stdev(x) for x in scores]
-        # plt.errorbar(ox, scores, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none') # marker=marker, label=alg)
+        plt.errorbar(ox, scores, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker='o', label=self.json_data['type'])
 
     def create_plt(self):
         if self.chart_type == CType.RESTARTS:
@@ -158,7 +163,7 @@ class CompareChart(DefaultChart):
 
     def __plot_scores(self, alg, marker):
         scores = [x[alg]['score'][self.ctype.value] for x in self.json_data.values()]
-        y = [x/y for x, y in zip(self.originals, scores)]
+        y = [1/(y/x) for x, y in zip(self.originals, scores)]
 
         if self.ctype == CType.AVG:
             self.xlabel = 'Średni koszt przejazdu'
@@ -167,7 +172,7 @@ class CompareChart(DefaultChart):
                 x = [x['score'] for x in a]
                 e.append(0 if len(x) < 2 else statistics.stdev(x))
 
-            e = [x/y for x, y in zip(e, self.originals)]
+            e = [0 if std == 0 else avg - (1 / ((std + score)/org)) for std, org, avg, score in zip(e, self.originals, y, scores)]
 
             plt.errorbar(self.labels, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=marker, label=alg) #, uplims=True, lolims=True)
         else:
@@ -230,7 +235,6 @@ class CompareChart(DefaultChart):
                 i += 1
 
         plt.xticks(rotation=90)
-        plt.legend()
         self.ylabel = 'Nazwa wczytanej instancji'
         
         # plt.title(self.title)
