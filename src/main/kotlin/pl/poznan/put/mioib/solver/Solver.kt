@@ -7,6 +7,7 @@ import pl.poznan.put.mioib.algorithm.weight.SolutionEvaluator
 import pl.poznan.put.mioib.model.Instance
 import pl.poznan.put.mioib.model.Progress
 import pl.poznan.put.mioib.model.SolutionProposal
+import pl.poznan.put.mioib.shuffle
 
 object Solver {
     fun solve(
@@ -19,7 +20,7 @@ object Solver {
     ): Pair<SolutionProposal, Progress> {
         val initialSequence = instance.locations.indices.toList().toIntArray()
         val steps = mutableListOf<Pair<Int, Double>>()
-        var best = SolutionProposal(initialSequence, evaluator.solution(initialSequence))
+        var best = SolutionProposal(initialSequence, Double.MAX_VALUE)
         stopCondition.initialize()
         var recentSolution = best
         var i = 0

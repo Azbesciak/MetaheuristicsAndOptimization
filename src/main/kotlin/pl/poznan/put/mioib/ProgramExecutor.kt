@@ -17,7 +17,7 @@ class ProgramExecutor(private val task: Params.() -> Unit) : CliktCommand() {
     private val notImprovingSolutions by option(help = "max number of not improving solutions")
             .int().default(0).validate { it >= 0 }
     private val dumpInterval by option(help = "how often inner solutions should be dumped")
-            .int().default(100).validate { it >= 0 }
+            .int().default(10).validate { it >= 0 }
     private val randomSeed by option(help = "random seed value").int().default(1234)
     private val solutionsToCollect by option(help = "number of solutions to collect").int().default(10)
     private val showProgress by option(help = "should show progress").default("false")
