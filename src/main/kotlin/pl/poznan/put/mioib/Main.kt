@@ -5,7 +5,6 @@ import pl.poznan.put.mioib.algorithm.mutators.SolutionMutator
 import pl.poznan.put.mioib.algorithm.mutators.ls.GreedyNeighbourhoodBrowser
 import pl.poznan.put.mioib.algorithm.mutators.ls.LocalSearchMutator
 import pl.poznan.put.mioib.algorithm.mutators.ls.SteepestNeighbourhoodBrowser
-import pl.poznan.put.mioib.algorithm.mutators.ls.UpperTriangleNeighbourhoodExplorer
 import pl.poznan.put.mioib.algorithm.mutators.nearestneighbor.NearestNeighborMutator
 import pl.poznan.put.mioib.algorithm.mutators.random.RandomMutator
 import pl.poznan.put.mioib.algorithm.stopcondition.DisabledStopCondition
@@ -13,8 +12,9 @@ import pl.poznan.put.mioib.algorithm.stopcondition.IterationsCountStopCondition
 import pl.poznan.put.mioib.algorithm.stopcondition.NotImprovingSolutionStopCondition
 import pl.poznan.put.mioib.algorithm.stopcondition.StopCondition
 import pl.poznan.put.mioib.algorithm.weight.*
-import pl.poznan.put.mioib.benchmark.LevenshteinSimilarityMeasurer
+import pl.poznan.put.mioib.benchmark.similarity.LevenshteinSimilarityMeasurer
 import pl.poznan.put.mioib.benchmark.measureTime
+import pl.poznan.put.mioib.benchmark.similarity.SameSequenceOccurrenceSimilarity
 import pl.poznan.put.mioib.model.Instance
 import pl.poznan.put.mioib.model.Progress
 import pl.poznan.put.mioib.model.SolutionProposal
@@ -109,9 +109,9 @@ private fun notifyResult(
 
 private fun qualityStatistics(collectedResults: List<Pair<SolutionProposal, Progress>>, instanceSolution: InstanceSolution) =
         collectedResults
-                .map { LevenshteinSimilarityMeasurer.measure(it.first.sequence, instanceSolution.solution.sequence) }
+                .map { SameSequenceOccurrenceSimilarity.measure(it.first.sequence, instanceSolution.solution.sequence) }
                 .stream()
-                .mapToDouble { (instanceSolution.instance.size - it.toDouble()) / instanceSolution.instance.size }
+                .mapToDouble { it }
                 .summaryStatistics()
 
 private fun solve(

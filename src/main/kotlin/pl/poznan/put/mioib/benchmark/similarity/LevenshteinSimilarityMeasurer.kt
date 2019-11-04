@@ -1,8 +1,8 @@
-package pl.poznan.put.mioib.benchmark
+package pl.poznan.put.mioib.benchmark.similarity
 
 // https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Kotlin
 object LevenshteinSimilarityMeasurer {
-    fun measure(lhs: IntArray, rhs: IntArray): Int {
+    fun measure(lhs: IntArray, rhs: IntArray): Double {
         val lhsLength = lhs.size
         val rhsLength = rhs.size
 
@@ -25,6 +25,6 @@ object LevenshteinSimilarityMeasurer {
             newCost = swap
         }
 
-        return cost[lhsLength]
+        return 1 - cost[lhsLength] / lhsLength.toDouble()
     }
 }
