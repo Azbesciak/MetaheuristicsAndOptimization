@@ -4,7 +4,13 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 class SolutionPrinter {
-    private val columns = listOf("Instance", "Algorithm", "avgTime [ms/inst]", "avgScore", "bestScore", "worstScore", "instanceBest", "bestSimilarity", "avgSimilarity")
+    private val columns = listOf(
+            "Instance", "Algorithm",
+            "avgTime [ms/inst]", "avgScore",
+            "bestScore", "worstScore",
+            "instanceBest",
+            "bestSimilarity", "avgSimilarity"
+    )
     private val separator = " \t| "
     fun init() {
         println(columns.joinToString(separator))
