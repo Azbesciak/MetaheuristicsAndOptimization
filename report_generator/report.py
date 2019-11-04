@@ -44,11 +44,14 @@ def generate():
         print(instance)
 
         try:
-            charts.generate("{}_restarts".format(instance), "Restarty", instances, charts.CType.RESTARTS, alg_types=['Greedy', 'Steepest'], instance=instance,
-            xlabel='Liczba restartów', ylabel='Łączny koszt przejazdu')
+            charts.generate("{}_progress_avg".format(instance), "Postępy AVG", instances, charts.CType.PROGRESS_AVG, alg_types=['Greedy', 'Steepest'], instance=instance,
+            xlabel='Liczba restartów', ylabel='Średnie rozwiązanie')
 
-            charts.generate("{}_progress".format(instance), "Postępy", instances, charts.CType.PROGRESS, alg_types=['Greedy', 'Steepest'], instance=instance,
-            xlabel='Liczba powtórzeń', ylabel='Łączny koszt przejazdu')
+            charts.generate("{}_progress_best".format(instance), "Postępy BEST", instances, charts.CType.PROGRESS_BEST, alg_types=['Greedy', 'Steepest'], instance=instance,
+            xlabel='Liczba restartów', ylabel='Najlepsze rozwiązanie')
+
+            charts.generate("{}_begend".format(instance), "Początkowe/Końcowe", instances, charts.CType.BEG_END, alg_types=['Greedy', 'Steepest'], instance=instance,
+            xlabel='Początkowe rozwiązanie', ylabel='Końcowe rozwiązanie')
 
         except Exception as e:
             print("Error: Generacja {} nie powiodła się \n\t{}: {}".format(instance, type(e), e))

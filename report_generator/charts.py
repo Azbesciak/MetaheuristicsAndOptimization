@@ -27,8 +27,9 @@ class CType(Enum):
         TIME = 'averageTime'
         TIME_EFF = 'efficiencyInTime'
         AVG_STEPS = 'avg_steps'
-        PROGRESS = 'progress'
-        RESTARTS = 'restarts'
+        PROGRESS_AVG = 'progress_avg'
+        PROGRESS_BEST = 'progress_best'
+        BEG_END = 'beg_end'
 
 
 class DefaultChart:
@@ -51,8 +52,6 @@ class DefaultChart:
         raise NotImplementedError
 
     def generate(self):
-        plt.legend()
-
         out_path = os.path.join('out', self.file_path)
 
         if not os.path.exists(os.path.join('out', self.dir_path)):
@@ -83,28 +82,29 @@ class SingleInstanceChart(DefaultChart):
         super().__init__(name, title, json_data, chart_type, xlabel=xlabel, ylabel=ylabel)
         self.file_path = '{}/{}{}.png'.format(self.dir_path, self.instance, self.name)
 
-    def __plot_restarts(self):
-        # self.ylabel = 'Liczba restartów'
-        # self.xlabel = 'Łączny koszt przejazdu'
+    def __plot_begend(self):
         axs = self.axs[self.alg_types.index(self.summary['type'])]
 
         attempts = self.summary['attempts']
-        attempts_score = [x['score'] for x in attempts]
-        scores = self.summary['score']
+        attempts_steps = [x['steps'] for x in attempts]
 
-        std = 0 if len(attempts_score) < 2 else statistics.stdev(attempts_score)
-        x = range(len(attempts))
+        scores = []
+        ox = []
 
-        axs.scatter(x, attempts_score)
+        for attempt_steps in attempts_steps:
+            ox.append([x['second'] for x in attempt_steps])
+            scores.append([x['third'] for x in attempt_steps])
 
-        axs.axhline(y=scores['avg'], color='r', linestyle='-', label='Avg')
+        scores = zip(*scores)
+        scores = [x[0] for x in scores]
 
-        axs.axhline(y=scores['avg']-std, color='orange', linestyle='--', label='Std')
-        axs.axhline(y=scores['avg']+std, color='orange', linestyle='--')
+        ox = zip(*ox)
+        ox = [x[0] for x in ox]
+
         axs.set_title(self.summary['type'])
-        axs.axhline(y=min(attempts_score), color='green', linestyle=':', label="Najlepszy wynik")
+        axs.scatter(ox, scores, s=0.5)
 
-    def __plot_progress(self):
+    def __plot_progress(self, only_best=False):
         # self.ylabel = 'Liczba powtórzeń'
         # self.xlabel = 'Łączny koszt przejazdu'
         axs = self.axs[self.alg_types.index(self.summary['type'])]
@@ -120,23 +120,27 @@ class SingleInstanceChart(DefaultChart):
             scores.append([x['second'] for x in attempt_steps])
 
         scores = zip(*scores)
-        e = copy.deepcopy(scores)
-        scores = [statistics.mean(x) for x in scores]
-
-        e = [0 if len(x) < 2 else statistics.stdev(x) for x in e]
+        scores = [min(x) for x in scores] if only_best else [statistics.mean(x) for x in scores]
 
         ox = zip(*ox)
         ox = [x[0] for x in ox]
 
         axs.set_title(self.summary['type'])
-        axs.errorbar(ox, scores, capsize=4, capthick=1.2, yerr=None, xerr=None, ls='none', marker='o')
+        axs.scatter(ox, scores, s=0.8)
+
+        axs.set_xlabel(self.xlabel)
+        axs.set_ylabel(self.ylabel)
 
     def create_plt(self):
-        self.fig, self.axs = plt.subplots(1, len(self.alg_types), sharey=True)
+        self.fig, self.axs = plt.subplots(len(self.alg_types), 1)
 
-        self.fig.suptitle(self.instance, fontsize="x-large")
-        self.fig.text(0.5, 0.04, self.xlabel, ha='center')
-        self.fig.text(0.04, 0.5, self.ylabel, va='center', rotation='vertical')
+        for axs in self.axs:
+            axs.set_xlabel(self.xlabel)
+            axs.set_ylabel(self.ylabel)
+
+        # self.fig.suptitle(self.instance, fontsize="x-large")
+        # self.fig.text(0.5, 0.04, self.xlabel, ha='center')
+        # self.fig.text(0.04, 0.5, self.ylabel, va='center', rotation='vertical')
 
         for alg_type in self.json_data[self.instance].keys(): 
             if alg_type in self.alg_types:
@@ -145,13 +149,16 @@ class SingleInstanceChart(DefaultChart):
 
                 self.summary = self.json_data[self.instance][alg_type]
 
-                if self.chart_type == CType.RESTARTS:
+                if self.chart_type == CType.BEG_END:
                 # plt.errorbar(ox, scores, capsize=4, capth
-                    self.__plot_restarts()
-                if self.chart_type == CType.PROGRESS:
+                    self.__plot_begend()
+                elif self.chart_type == CType.PROGRESS_AVG:
                     self.__plot_progress()
+                elif self.chart_type == CType.PROGRESS_BEST:
+                    self.__plot_progress(only_best=True)
 
-                            
+        # plt.tight_layout()
+        plt.tight_layout()
         return plt
 
 
@@ -167,6 +174,7 @@ class CompareChart(DefaultChart):
     def generate(self):
         plt.xlabel(self.ylabel)
         plt.ylabel(self.xlabel)
+        plt.legend()
         return super().generate()
 
     def __get_best_times(self):

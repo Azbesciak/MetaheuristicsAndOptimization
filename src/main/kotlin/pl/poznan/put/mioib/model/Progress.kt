@@ -1,5 +1,5 @@
 package pl.poznan.put.mioib.model
 
 data class Progress (
-        var steps: MutableList<Pair<Int, Double>> = mutableListOf() // <Iteration, Score>
+        var steps: MutableList<Triple<Int, Double, Double>> = mutableListOf() // <Iteration, Score>
 )
