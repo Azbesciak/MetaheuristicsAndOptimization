@@ -111,7 +111,7 @@ private fun qualityStatistics(collectedResults: List<Pair<SolutionProposal, Prog
         collectedResults
                 .map { LevenshteinSimilarityMeasurer.measure(it.first.sequence, instanceSolution.solution.sequence) }
                 .stream()
-                .mapToDouble { it.toDouble() }
+                .mapToDouble { (instanceSolution.instance.size - it.toDouble()) / instanceSolution.instance.size }
                 .summaryStatistics()
 
 private fun solve(
