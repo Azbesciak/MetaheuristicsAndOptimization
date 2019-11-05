@@ -88,45 +88,29 @@ class SingleInstanceChart(DefaultChart):
         attempts = self.summary['attempts']
         attempts_steps = [x['steps'] for x in attempts]
 
-        scores = []
-        ox = []
+        end = []
+        beg = []
 
         for attempt_steps in attempts_steps:
-            ox.append([x['second'] for x in attempt_steps])
-            scores.append([x['third'] for x in attempt_steps])
-
-        scores = zip(*scores)
-        scores = [x[0] for x in scores]
-
-        ox = zip(*ox)
-        ox = [x[0] for x in ox]
+            end.append(attempt_steps[0]['second'])
+            beg.append(attempt_steps[1]['second'])
 
         axs.set_title(self.summary['type'])
-        axs.scatter(ox, scores, s=0.5)
+        axs.scatter(beg, end, s=0.5)
 
-    def __plot_progress(self, only_best=False):
+    def __plot_restarts(self, only_best=False):
         # self.ylabel = 'Liczba powtórzeń'
         # self.xlabel = 'Łączny koszt przejazdu'
         axs = self.axs[self.alg_types.index(self.summary['type'])]
-
         attempts = self.summary['attempts']
-        attempts_steps = [x['steps'] for x in attempts]
+        ox = [range(len(attempts))]
+        y = []
 
-        scores = []
-        ox = []
-
-        for attempt_steps in attempts_steps:
-            ox.append([x['first'] for x in attempt_steps])
-            scores.append([x['second'] for x in attempt_steps])
-
-        scores = zip(*scores)
-        scores = [min(x) for x in scores] if only_best else [statistics.mean(x) for x in scores]
-
-        ox = zip(*ox)
-        ox = [x[0] for x in ox]
+        scores = [x['score'] for x in attempts]
+        y = [min(scores[0:x]) if only_best else statistics.mean(scores[0:x]) for x in range(1, len(scores)+1)]
 
         axs.set_title(self.summary['type'])
-        axs.scatter(ox, scores, s=0.8)
+        axs.scatter(ox, y, s=0.8)
 
         axs.set_xlabel(self.xlabel)
         axs.set_ylabel(self.ylabel)
@@ -153,9 +137,9 @@ class SingleInstanceChart(DefaultChart):
                 # plt.errorbar(ox, scores, capsize=4, capth
                     self.__plot_begend()
                 elif self.chart_type == CType.PROGRESS_AVG:
-                    self.__plot_progress()
+                    self.__plot_restarts()
                 elif self.chart_type == CType.PROGRESS_BEST:
-                    self.__plot_progress(only_best=True)
+                    self.__plot_restarts(only_best=True)
 
         # plt.tight_layout()
         plt.tight_layout()
