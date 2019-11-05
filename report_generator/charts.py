@@ -11,6 +11,21 @@ import copy
 MARKERS = ['s', 'o', '*', 'p', 'x', 'D']
 OUTPUT_DIR='out'
 
+
+class MarkerSpec:
+    def __init__(self, sign: str, color: str):
+        self.color = color
+        self.sign = sign
+
+
+ALG_MARKERS = {
+    "Greedy": MarkerSpec("s", "blue"),
+    "Steepest": MarkerSpec("o", "orange"),
+    "Heuristic": MarkerSpec("*", "green"),
+    "Random": MarkerSpec("p", "red")
+}
+
+
 def generate(name, title, instances, chart_type, alg_types=None, instance=None, xlabel=None, ylabel=None):
     COMPARE_TYPES = [CType.MAX, CType.MIN, CType.AVG, CType.TIME, CType.TIME_EFF, CType.AVG_STEPS]
 
@@ -84,7 +99,8 @@ class SingleInstanceChart(DefaultChart):
         self.file_path = '{}/{}{}.png'.format(self.dir_path, self.instance, self.name)
 
     def __plot_begend(self):
-        axs = self.axs[self.alg_types.index(self.summary['type'])]
+        alg_name = self.summary['type']
+        axs = self.axs[self.alg_types.index(alg_name)]
 
         attempts = self.summary['attempts']
         attempts_steps = [x['steps'] for x in attempts]
@@ -96,13 +112,14 @@ class SingleInstanceChart(DefaultChart):
             end.append(attempt_steps[0]['second'])
             beg.append(attempt_steps[1]['second'])
 
-        axs.set_title(self.summary['type'])
-        axs.scatter(beg, end, s=0.5)
+        axs.set_title(alg_name)
+        axs.scatter(beg, end, s=0.5, color=ALG_MARKERS[alg_name].color)
 
     def __plot_restarts(self, only_best=False):
         # self.ylabel = 'Liczba powtórzeń'
         # self.xlabel = 'Łączny koszt przejazdu'
-        axs = self.axs[self.alg_types.index(self.summary['type'])]
+        alg_name = self.summary['type']
+        axs = self.axs[self.alg_types.index(alg_name)]
         attempts = self.summary['attempts']
         ox = [range(len(attempts))]
         y = []
@@ -110,8 +127,8 @@ class SingleInstanceChart(DefaultChart):
         scores = [x['score'] for x in attempts]
         y = [min(scores[0:x]) if only_best else statistics.mean(scores[0:x]) for x in range(1, len(scores)+1)]
 
-        axs.set_title(self.summary['type'])
-        axs.scatter(ox, y, s=0.8)
+        axs.set_title(alg_name)
+        axs.scatter(ox, y, s=0.8, color=ALG_MARKERS[alg_name].color)
 
         axs.set_xlabel(self.xlabel)
         axs.set_ylabel(self.ylabel)
@@ -189,7 +206,7 @@ class CompareChart(DefaultChart):
         best_times = [min(x) for x in best_times]
         return best_times
 
-    def __plot_scores(self, alg, marker):
+    def __plot_scores(self, alg, marker: MarkerSpec):
         scores = [x[alg]['score'][self.ctype.value] for x in self.json_data.values()]
         y = [1/(y/x) for x, y in zip(self.originals, scores)]
 
@@ -202,9 +219,10 @@ class CompareChart(DefaultChart):
 
             e = [0 if std == 0 else avg - (1 / ((std + score)/org)) for std, org, avg, score in zip(e, self.originals, y, scores)]
 
-            plt.errorbar(self.labels, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=marker, label=alg) #, uplims=True, lolims=True)
+            plt.errorbar(self.labels, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None,
+                         ls='none', marker=marker.sign, label=alg, color=marker.color) #, uplims=True, lolims=True)
         else:
-            plt.scatter(self.labels, y, marker=marker, label=alg)
+            plt.scatter(self.labels, y, marker=marker.sign, label=alg, color=marker.color)
 
         if self.ctype == CType.MAX:
             self.xlabel = 'Jakość (przypadek najgorszy)'
@@ -213,27 +231,27 @@ class CompareChart(DefaultChart):
         
         plt.ylim(0.0, 1.2) # todo: erase 0.0 
 
-    def __plot_times(self, alg, marker):
+    def __plot_times(self, alg, marker: MarkerSpec):
         y = self.times
-        plt.scatter(self.labels, y, marker=marker, label=alg)
+        plt.scatter(self.labels, y, marker=marker.sign, color=marker.color, label=alg)
         self.xlabel = 'Średni czas działania'
         plt.yscale('log')
 
-    def __plot_steps(self, alg, marker):
+    def __plot_steps(self, alg, marker: MarkerSpec):
         steps = []
         for a in self.attempts:
             x = [x['steps'][-1]['first'] for x in a]
             steps.append(x)
         y = [statistics.mean(x) for x in steps]
         e = [0 if len(x) < 2 else statistics.stdev(x) for x in steps]
-        plt.errorbar(self.labels, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=marker, label=alg)
+        plt.errorbar(self.labels, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=marker.sign, label=alg, color=marker.color)
         self.xlabel = 'Średnia liczba kroków algorytmu'
         plt.yscale('log')
 
-    def __plot_efficiency(self, alg, marker):
+    def __plot_efficiency(self, alg, marker: MarkerSpec):
         scores = [x[alg]['score']['avg'] for x in self.json_data.values()]
         efficiency = [(best/avg/(time/best_time)) for best, avg, time, best_time in zip(self.originals, scores, self.times, self.best_times)]
-        plt.scatter(self.labels, efficiency, marker=marker, label=alg)
+        plt.scatter(self.labels, efficiency, marker=marker.sign, label=alg, color=marker.color)
         self.xlabel = 'Efektywność algorytmu'
 
     def create_plt(self):
@@ -251,16 +269,16 @@ class CompareChart(DefaultChart):
                 self.times = [x[alg]['averageTime'] for x in self.json_data.values()]
 
                 if self.ctype in ([CType.AVG, CType.MAX, CType.MIN]): 
-                    self.__plot_scores(alg, MARKERS[i])
+                    self.__plot_scores(alg, ALG_MARKERS[alg])
                 
                 elif self.ctype == CType.TIME:
-                    self.__plot_times(alg, MARKERS[i])
+                    self.__plot_times(alg, ALG_MARKERS[alg])
 
                 elif self.ctype == CType.AVG_STEPS:
-                    self.__plot_steps(alg, MARKERS[i])
+                    self.__plot_steps(alg, ALG_MARKERS[alg])
 
                 elif self.ctype == CType.TIME_EFF:
-                    self.__plot_efficiency(alg, MARKERS[i])
+                    self.__plot_efficiency(alg, ALG_MARKERS[alg])
 
                 i += 1
 
