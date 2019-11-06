@@ -29,7 +29,7 @@ object Solver {
             require(recentSolution.score >= 0) {
                 "${instance.name}: solution score is negative: $recentSolution"
             }
-            if (isBetter(best, recentSolution)) {
+            if (isBetter(best, recentSolution) || i == 0) {
                 best = recentSolution
             }
             if (i++%progressDumpInterval == 0){
