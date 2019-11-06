@@ -2,6 +2,7 @@ package pl.poznan.put.mioib.algorithm.mutators.ls
 
 import pl.poznan.put.mioib.algorithm.weight.SolutionEvaluator
 import pl.poznan.put.mioib.algorithm.weight.SolutionValueComparator
+import pl.poznan.put.mioib.model.DeltaUpdate
 
 class SteepestNeighbourhoodBrowser(
         private val initialValue: Double,

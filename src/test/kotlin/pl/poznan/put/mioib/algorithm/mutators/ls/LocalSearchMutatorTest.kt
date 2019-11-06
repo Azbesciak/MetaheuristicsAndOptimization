@@ -4,6 +4,7 @@ import com.nhaarman.mockito_kotlin.doReturn
 import com.nhaarman.mockito_kotlin.mock
 import org.junit.jupiter.api.Test
 import pl.poznan.put.mioib.algorithm.weight.SolutionEvaluator
+import pl.poznan.put.mioib.model.DeltaUpdate
 import pl.poznan.put.mioib.model.SolutionProposal
 import kotlin.test.assertEquals
 

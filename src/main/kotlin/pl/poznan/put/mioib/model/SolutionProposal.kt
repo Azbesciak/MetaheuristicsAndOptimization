@@ -1,5 +1,7 @@
 package pl.poznan.put.mioib.model
 
+import pl.poznan.put.mioib.swappedAt
+
 data class SolutionProposal(
         val sequence: IntArray,
         val score: Double
@@ -21,4 +23,9 @@ data class SolutionProposal(
         result = 31 * result + score.hashCode()
         return result
     }
+
+    infix fun updatedWith(update: DeltaUpdate) = SolutionProposal(
+            sequence = sequence.swappedAt(update.from, update.to),
+            score = score + update.scoreDelta
+    )
 }
