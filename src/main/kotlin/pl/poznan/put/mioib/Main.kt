@@ -12,7 +12,6 @@ import pl.poznan.put.mioib.algorithm.stopcondition.IterationsCountStopCondition
 import pl.poznan.put.mioib.algorithm.stopcondition.NotImprovingSolutionStopCondition
 import pl.poznan.put.mioib.algorithm.stopcondition.StopCondition
 import pl.poznan.put.mioib.algorithm.weight.*
-import pl.poznan.put.mioib.benchmark.similarity.LevenshteinSimilarityMeasurer
 import pl.poznan.put.mioib.benchmark.measureTime
 import pl.poznan.put.mioib.benchmark.similarity.SameSequenceOccurrenceSimilarity
 import pl.poznan.put.mioib.model.Instance
@@ -29,6 +28,8 @@ import pl.poznan.put.mioib.report.Summary
 import pl.poznan.put.mioib.solver.Solver
 import kotlin.random.Random
 
+typealias Executor = Pair<String, (r: Random) -> Pair<SolutionMutator, StopCondition>>
+
 fun main(args: Array<String>) = ProgramExecutor {
     val solutions = BestScoresReader.read(solutionValuesPath)
     val instances = InstanceSolutionReader(
@@ -38,23 +39,22 @@ fun main(args: Array<String>) = ProgramExecutor {
     val printer = SolutionPrinter()
     printer.init()
     instances.forEach {
-        val random = Random(randomSeed)
         val lsBrowser = GreedyNeighbourhoodBrowser(LOWER_SOLUTION_VALUE)
         val stBrowser = SteepestNeighbourhoodBrowser(LOWER_SOLUTION_VALUE)
-
         val instance = it.instance
         val weightMatrix = SymmetricWeightMatrix(instance, Euclides2DWeightCalculator)
         val evaluator = SymmetricSolutionEvaluator(weightMatrix)
         val isBetter = MIN_SOLUTION
-        arrayOf(
-                "Random" to { randomMut(random) },
-                "Heuristic" to { heuristic(weightMatrix, random) },
-                "Greedy" to { greedyLs(lsBrowser, random, isBetter) },
-                "Steepest" to { steepestLs(stBrowser, random, isBetter) }
+        arrayOf<Executor>(
+                "Random" to { r -> randomMut(r) },
+                "Heuristic" to { r -> heuristic(weightMatrix, r) },
+                "Greedy" to { r -> greedyLs(lsBrowser, r, isBetter) },
+                "Steepest" to { r -> steepestLs(stBrowser, r, isBetter) }
         ).forEach { (mutatorName, mutatorFactory) ->
+            val random = Random(randomSeed)
             val collectedResults = mutableListOf<Pair<SolutionProposal, Progress>>()
             val averageTime = measureTime(minRetries, warmUp, minDuration, showProgress) {
-                val (mutator, stopCondition) = mutatorFactory()
+                val (mutator, stopCondition) = mutatorFactory(random)
                 val result = solve(isBetter, instance, evaluator, mutator, dumpInterval, stopCondition)
                 if (collectedResults.size < solutionsToCollect)
                     collectedResults += result
