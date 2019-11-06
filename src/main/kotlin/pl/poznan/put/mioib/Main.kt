@@ -39,8 +39,8 @@ fun main(args: Array<String>) = ProgramExecutor {
     val printer = SolutionPrinter()
     printer.init()
     instances.forEach {
-        val lsBrowser = GreedyNeighbourhoodBrowser(LOWER_SOLUTION_VALUE)
-        val stBrowser = SteepestNeighbourhoodBrowser(LOWER_SOLUTION_VALUE)
+        val lsBrowser = GreedyNeighbourhoodBrowser(0.0, LOWER_SOLUTION_VALUE)
+        val stBrowser = SteepestNeighbourhoodBrowser(0.0, LOWER_SOLUTION_VALUE)
         val instance = it.instance
         val weightMatrix = SymmetricWeightMatrix(instance, Euclides2DWeightCalculator)
         val evaluator = SymmetricSolutionEvaluator(weightMatrix)
