@@ -7,11 +7,16 @@ class SteepestNeighbourhoodBrowser(
         private val isBetter: SolutionValueComparator
 ) : NeighbourhoodBrowser {
     override fun browse(indices: IntArray, evaluator: SolutionEvaluator): List<DeltaUpdate> {
-        var best = DeltaUpdate(0,0,0.0)
+        var best = 0.0
+        var bestFrom = -1
+        var bestTo = -1
         upperTriangleNeighbourhoodBrowser(indices, evaluator) { from, to, result ->
-                if (isBetter(best.scoreDelta, result))
-                    best = DeltaUpdate(from, to, result)
+            if (isBetter(best, result)) {
+                best = result
+                bestFrom = from
+                bestTo = to
+            }
         }
-        return if (best.from == best.to) emptyList() else listOf(best)
+        return if (bestFrom == -1) emptyList() else listOf(DeltaUpdate(bestFrom, bestTo, best))
     }
 }
