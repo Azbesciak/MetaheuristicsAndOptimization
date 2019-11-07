@@ -137,20 +137,22 @@ private fun notifyResult(
 ) {
     val stats = collectedResults.stream().mapToDouble { it.first.score }.summaryStatistics()
     val quality = qualityStatistics(collectedResults, instanceSolution)
+    val qualityStats = qualityStatistics(collectedResults, instanceSolution).summaryStatistics()
     val bestScore = instanceSolution.solution.score
     printer.update(
             instanceSolution.name, algorithm,
             averageTime,
             stats.average, stats.min, stats.max,
             bestScore,
-            quality.min, quality.average
+            qualityStats.min,
+            qualityStats.average
     )
 
     val attempts = collectedResults.map { (solution, progress) ->
         Attempt(solution.score, progress.steps)
     }
     val score = Score(stats.average, stats.min, stats.max, bestScore)
-    val summary = Summary(instanceSolution.name, algorithm, averageTime, score, attempts)
+    val summary = Summary(instanceSolution.name, algorithm, averageTime, score, attempts, quality.toArray())
     summary.save()
 }
 
@@ -159,7 +161,6 @@ private fun qualityStatistics(collectedResults: List<Pair<SolutionProposal, Prog
                 .map { SameSequenceOccurrenceSimilarity.measure(it.first.sequence, instanceSolution.solution.sequence) }
                 .stream()
                 .mapToDouble { it }
-                .summaryStatistics()
 
 private fun solve(
         isBetter: SolutionComparator,

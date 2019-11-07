@@ -30,6 +30,7 @@ class CType(Enum):
         PROGRESS_AVG = 'progress_avg'
         PROGRESS_BEST = 'progress_best'
         BEG_END = 'beg_end'
+        SIMILARITY = 'similarity'
 
 
 class DefaultChart:
@@ -115,6 +116,21 @@ class SingleInstanceChart(DefaultChart):
         axs.set_xlabel(self.xlabel)
         axs.set_ylabel(self.ylabel)
 
+    def __plot_similarity(self):
+        axs = self.axs[self.alg_types.index(self.summary['type'])]
+        original = self.summary['score']['original']
+        attempts = self.summary['attempts']
+        y = self.summary['similarity']
+
+        scores = [x['score'] for x in attempts]
+        ox = [1/(x/original) for x in scores]
+
+        axs.set_title(self.summary['type'])
+        axs.scatter(ox, y, s=0.5)
+
+        axs.set_xlabel(self.xlabel)
+        axs.set_ylabel(self.ylabel)
+
     def create_plt(self):
         self.fig, self.axs = plt.subplots(len(self.alg_types), 1)
 
@@ -140,6 +156,8 @@ class SingleInstanceChart(DefaultChart):
                     self.__plot_restarts()
                 elif self.chart_type == CType.PROGRESS_BEST:
                     self.__plot_restarts(only_best=True)
+                elif self.chart_type == CType.SIMILARITY:
+                    self.__plot_similarity()
 
         # plt.tight_layout()
         plt.tight_layout()

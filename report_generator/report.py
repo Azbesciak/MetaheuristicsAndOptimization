@@ -53,6 +53,9 @@ def generate():
             charts.generate("{}_begend".format(instance), "Początkowe/Końcowe", instances, charts.CType.BEG_END, alg_types=['Greedy', 'Steepest'], instance=instance,
             xlabel='Początkowe rozwiązanie', ylabel='Końcowe rozwiązanie')
 
+            charts.generate("{}_similaritygi".format(instance), "Podobieństwo", instances, charts.CType.SIMILARITY, alg_types=['Greedy', 'Steepest'], instance=instance,
+            xlabel='Jakość', ylabel='Podobieństwo')
+
         except Exception as e:
             print("Error: Generacja {} nie powiodła się \n\t{}: {}".format(instance, type(e), e))
 
