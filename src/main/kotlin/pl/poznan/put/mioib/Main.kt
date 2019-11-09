@@ -51,8 +51,10 @@ fun main(args: Array<String>) = ProgramExecutor {
                 "Heuristic" to { r -> heuristic(weightMatrix, r) },
                 "Greedy" to { r -> greedyLs(lsBrowser, r, isBetter) },
                 "Greedy Random Start" to { r -> greedyLs(greedyNB(r), r, isBetter) },
+                "Greedy Heuristic Start" to { r -> greedyLsH(lsBrowser, weightMatrix, r, isBetter) },
                 "Steepest" to { r -> steepestLs(stBrowser, r, isBetter) },
-                "Steepest Random Start" to { r -> steepestLs(steepestNB(r), r, isBetter) }
+                "Steepest Random Start" to { r -> steepestLs(steepestNB(r), r, isBetter) },
+                "Steepest Heuristic Start" to { r -> steepestLsH(stBrowser, weightMatrix, r, isBetter) }
         ).forEach { (mutatorName, mutatorFactory) ->
             val random = Random(randomSeed)
             val collectedResults = mutableListOf<Pair<SolutionProposal, Progress>>()
@@ -75,17 +77,27 @@ private fun randomMut(random: Random, instance: Instance) =
 private fun Params.steepestLs(stBrowser: SteepestNeighbourhoodBrowser, random: Random, isBetter: SolutionComparator) =
         LocalSearchMutator(stBrowser) prependWithRandom random to notImprovingSC(isBetter).skipFirstCheck
 
+private fun Params.steepestLsH(stBrowser: SteepestNeighbourhoodBrowser, weightMatrix: SymmetricWeightMatrix, random: Random, isBetter: SolutionComparator) =
+        LocalSearchMutator(stBrowser) prependWith nearest(weightMatrix, random) to notImprovingSC(isBetter).skipFirstCheck
+
 private fun greedyNB(random: Random) = GreedyNeighbourhoodBrowser(0.0, { random.nextInt(it) }, LOWER_SOLUTION_VALUE)
 private fun steepestNB(random: Random) = SteepestNeighbourhoodBrowser(0.0, { random.nextInt(it) }, LOWER_SOLUTION_VALUE)
 
 private fun Params.greedyLs(lsBrowser: GreedyNeighbourhoodBrowser, random: Random, isBetter: SolutionComparator) =
         LocalSearchMutator(lsBrowser) prependWithRandom random to notImprovingSC(isBetter).skipFirstCheck
 
-private fun heuristic(weightMatrix: SymmetricWeightMatrix, random: Random) =
-        NearestNeighborMutator(weightMatrix, LOWER_OR_EQUAL_SOLUTION_VALUE) { random.nextInt(it) } to onceSC()
+private fun Params.greedyLsH(lsBrowser: GreedyNeighbourhoodBrowser, weightMatrix: SymmetricWeightMatrix, random: Random, isBetter: SolutionComparator) =
+        LocalSearchMutator(lsBrowser) prependWith nearest(weightMatrix, random) to notImprovingSC(isBetter).skipFirstCheck
 
-private infix fun SolutionMutator.prependWithRandom(random: Random) =
-        MergedMutator(RandomMutator(random, 1), this)
+private fun heuristic(weightMatrix: SymmetricWeightMatrix, random: Random) =
+        nearest(weightMatrix, random) to onceSC()
+
+private fun nearest(weightMatrix: SymmetricWeightMatrix, random: Random) =
+        NearestNeighborMutator(weightMatrix, LOWER_OR_EQUAL_SOLUTION_VALUE) { random.nextInt(it) }
+
+private infix fun SolutionMutator.prependWith(mutator: SolutionMutator) = MergedMutator(mutator, this)
+
+private infix fun SolutionMutator.prependWithRandom(random: Random) = prependWith(RandomMutator(random, 1))
 
 private val StopCondition.skipFirstCheck
     get() = DisabledStopCondition(1, this)
