@@ -2,9 +2,7 @@ package pl.poznan.put.mioib
 
 import pl.poznan.put.mioib.algorithm.mutators.MergedMutator
 import pl.poznan.put.mioib.algorithm.mutators.SolutionMutator
-import pl.poznan.put.mioib.algorithm.mutators.ls.GreedyNeighbourhoodBrowser
-import pl.poznan.put.mioib.algorithm.mutators.ls.LocalSearchMutator
-import pl.poznan.put.mioib.algorithm.mutators.ls.SteepestNeighbourhoodBrowser
+import pl.poznan.put.mioib.algorithm.mutators.ls.*
 import pl.poznan.put.mioib.algorithm.mutators.nearestneighbor.NearestNeighborMutator
 import pl.poznan.put.mioib.algorithm.mutators.random.RandomMutator
 import pl.poznan.put.mioib.algorithm.stopcondition.DisabledStopCondition
@@ -45,15 +43,26 @@ fun main(args: Array<String>) = ProgramExecutor {
         val weightMatrix = SymmetricWeightMatrix(instance, Euclides2DWeightCalculator)
         val evaluator = SymmetricSolutionEvaluator(weightMatrix)
         val isBetter = MIN_SOLUTION
+        /**
+            ZeroNBStart - neighbourhood is explored from zero
+            RandomNBStart - neighbourhood is explored from random value
+            ContinuousNBStart - recently returned from is remembered, it is starting point for next iteration
+            HeuristicInit - Algorithm is initialized with heuristic solution
+            RandomInit - Algorithm is initialized with random solution
+        **/
         arrayOf<Executor>(
                 "Random" to { r -> randomMut(r, instance) },
                 "Heuristic" to { r -> heuristic(weightMatrix, r) },
-                "Greedy" to { r -> greedyLs(lsBrowser, r, isBetter) },
-                "Greedy Random Start" to { r -> greedyLs(greedyNB(r), r, isBetter) },
-                "Greedy Heuristic Start" to { r -> greedyLsH(lsBrowser, weightMatrix, r, isBetter) },
-                "Steepest" to { r -> steepestLs(stBrowser, r, isBetter) },
-                "Steepest Random Start" to { r -> steepestLs(steepestNB(r), r, isBetter) },
-                "Steepest Heuristic Start" to { r -> steepestLsH(stBrowser, weightMatrix, r, isBetter) }
+                "Greedy-ZeroNBStart-RandomInit" to { r -> greedyLs(lsBrowser, r, isBetter) },
+                "Greedy-RandomNBStart-RandomInit" to { r -> greedyLs(greedyNB(r), r, isBetter) },
+                "Greedy-ZeroNBStart-HeuristicInit" to { r -> greedyLsH(lsBrowser, weightMatrix, r, isBetter) },
+                "Greedy-ContinuousNBStart-RandomInit" to { r -> greedyLs(statefulGreedy(), r, isBetter) },
+                "Greedy-ContinuousNBStart-HeuristicInit" to { r -> greedyLsH(statefulGreedy(), weightMatrix, r, isBetter) },
+                "Steepest-ZeroNBStart-RandomInit" to { r -> steepestLs(stBrowser, r, isBetter) },
+                "Steepest-RandomNBStart-RandomInit" to { r -> steepestLs(steepestNB(r), r, isBetter) },
+                "Steepest-ZeroNBStart-HeuristicInit" to { r -> steepestLsH(stBrowser, weightMatrix, r, isBetter) },
+                "Steepest-ContinuousNBStart-RandomInit" to { r -> steepestLs(statefulSteepest(), r, isBetter) },
+                "Steepest-ContinuousNBStart-HeuristicInit" to { r -> steepestLsH(statefulSteepest(), weightMatrix, r, isBetter) }
         ).forEach { (mutatorName, mutatorFactory) ->
             val random = Random(randomSeed)
             val collectedResults = mutableListOf<Pair<SolutionProposal, Progress>>()
@@ -68,24 +77,33 @@ fun main(args: Array<String>) = ProgramExecutor {
     }
 }.main(args)
 
+private fun statefulGreedy() = stateful { GreedyNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }
+private fun statefulSteepest() = stateful { SteepestNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }
+
+private inline fun stateful(f: ((Int) -> Int) -> NeighbourhoodBrowser): StatefulBrowser {
+    lateinit var browser: StatefulBrowser
+    browser = StatefulBrowser(0, f { browser.currentFrom })
+    return browser
+}
+
 private fun randomMut(random: Random, instance: Instance) =
         RandomMutator(random, instance.size * instance.size / 3) to object : StopCondition {
             override fun shouldStop(solution: SolutionProposal) = false
         }
 
-private fun Params.steepestLs(stBrowser: SteepestNeighbourhoodBrowser, random: Random, isBetter: SolutionComparator) =
+private fun Params.steepestLs(stBrowser: NeighbourhoodBrowser, random: Random, isBetter: SolutionComparator) =
         LocalSearchMutator(stBrowser) prependWithRandom random to notImprovingSC(isBetter).skipFirstCheck
 
-private fun Params.steepestLsH(stBrowser: SteepestNeighbourhoodBrowser, weightMatrix: SymmetricWeightMatrix, random: Random, isBetter: SolutionComparator) =
+private fun Params.steepestLsH(stBrowser: NeighbourhoodBrowser, weightMatrix: SymmetricWeightMatrix, random: Random, isBetter: SolutionComparator) =
         LocalSearchMutator(stBrowser) prependWith nearest(weightMatrix, random) to notImprovingSC(isBetter).skipFirstCheck
 
 private fun greedyNB(random: Random) = GreedyNeighbourhoodBrowser(0.0, { random.nextInt(it) }, LOWER_SOLUTION_VALUE)
 private fun steepestNB(random: Random) = SteepestNeighbourhoodBrowser(0.0, { random.nextInt(it) }, LOWER_SOLUTION_VALUE)
 
-private fun Params.greedyLs(lsBrowser: GreedyNeighbourhoodBrowser, random: Random, isBetter: SolutionComparator) =
+private fun Params.greedyLs(lsBrowser: NeighbourhoodBrowser, random: Random, isBetter: SolutionComparator) =
         LocalSearchMutator(lsBrowser) prependWithRandom random to notImprovingSC(isBetter).skipFirstCheck
 
-private fun Params.greedyLsH(lsBrowser: GreedyNeighbourhoodBrowser, weightMatrix: SymmetricWeightMatrix, random: Random, isBetter: SolutionComparator) =
+private fun Params.greedyLsH(lsBrowser: NeighbourhoodBrowser, weightMatrix: SymmetricWeightMatrix, random: Random, isBetter: SolutionComparator) =
         LocalSearchMutator(lsBrowser) prependWith nearest(weightMatrix, random) to notImprovingSC(isBetter).skipFirstCheck
 
 private fun heuristic(weightMatrix: SymmetricWeightMatrix, random: Random) =
