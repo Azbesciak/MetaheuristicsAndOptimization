@@ -46,7 +46,7 @@ fun main(args: Array<String>) = ProgramExecutor {
         val evaluator = SymmetricSolutionEvaluator(weightMatrix)
         val isBetter = MIN_SOLUTION
         arrayOf<Executor>(
-                "Random" to { r -> randomMut(r) },
+                "Random" to { r -> randomMut(r, instance) },
                 "Heuristic" to { r -> heuristic(weightMatrix, r) },
                 "Greedy" to { r -> greedyLs(lsBrowser, r, isBetter) },
                 "Steepest" to { r -> steepestLs(stBrowser, r, isBetter) }
@@ -64,7 +64,10 @@ fun main(args: Array<String>) = ProgramExecutor {
     }
 }.main(args)
 
-private fun randomMut(random: Random) = RandomMutator(random, 1) to onceSC()
+private fun randomMut(random: Random, instance: Instance) =
+        RandomMutator(random, instance.size * instance.size / 3) to object : StopCondition {
+            override fun shouldStop(solution: SolutionProposal) = false
+        }
 
 private fun Params.steepestLs(stBrowser: SteepestNeighbourhoodBrowser, random: Random, isBetter: SolutionComparator) =
         LocalSearchMutator(stBrowser) prependWithRandom random to notImprovingSC(isBetter).skipFirstCheck
