@@ -15,12 +15,24 @@ object UpperTriangleNeighbourhoodExplorer : NeighbourhoodExplorer {
 
 inline fun upperTriangleNeighbourhoodBrowser(
         indices: IntArray, evaluator: SolutionEvaluator,
+        seed: (Int) -> Int,
         consumer: (from: Int, to: Int, delta: Double) -> Unit
 ) {
-    (0 until indices.size - 1).forEach { from ->
-        (from + 1 until indices.size).forEach { to ->
-            val delta = evaluator.delta(from, to, indices)
-            consumer(from, to, delta)
-        }
+    val start = seed(indices.size - 1)
+    (start until indices.size - 1).forEach { from ->
+        browse(from, evaluator, indices, consumer)
+    }
+    (0 until start).forEach { from ->
+        browse(from, evaluator, indices, consumer)
+    }
+}
+
+inline fun browse(
+        from: Int, evaluator: SolutionEvaluator,
+        indices: IntArray, consumer: (from: Int, to: Int, delta: Double) -> Unit
+) {
+    (from + 1 until indices.size).forEach { to ->
+        val delta = evaluator.delta(from, to, indices)
+        consumer(from, to, delta)
     }
 }

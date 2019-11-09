@@ -4,6 +4,7 @@ import pl.poznan.put.mioib.algorithm.mutators.MergedMutator
 import pl.poznan.put.mioib.algorithm.mutators.SolutionMutator
 import pl.poznan.put.mioib.algorithm.mutators.ls.GreedyNeighbourhoodBrowser
 import pl.poznan.put.mioib.algorithm.mutators.ls.LocalSearchMutator
+import pl.poznan.put.mioib.algorithm.mutators.ls.RandomNeighbourhoodBrowser
 import pl.poznan.put.mioib.algorithm.mutators.ls.SteepestNeighbourhoodBrowser
 import pl.poznan.put.mioib.algorithm.mutators.nearestneighbor.NearestNeighborMutator
 import pl.poznan.put.mioib.algorithm.mutators.random.RandomMutator
@@ -39,8 +40,8 @@ fun main(args: Array<String>) = ProgramExecutor {
     val printer = SolutionPrinter()
     printer.init()
     instances.forEach {
-        val lsBrowser = GreedyNeighbourhoodBrowser(0.0, LOWER_SOLUTION_VALUE)
-        val stBrowser = SteepestNeighbourhoodBrowser(0.0, LOWER_SOLUTION_VALUE)
+        val lsBrowser = GreedyNeighbourhoodBrowser(0.0, { 0 }, LOWER_SOLUTION_VALUE)
+        val stBrowser = SteepestNeighbourhoodBrowser(0.0, { 0 }, LOWER_SOLUTION_VALUE)
         val instance = it.instance
         val weightMatrix = SymmetricWeightMatrix(instance, Euclides2DWeightCalculator)
         val evaluator = SymmetricSolutionEvaluator(weightMatrix)
@@ -49,7 +50,9 @@ fun main(args: Array<String>) = ProgramExecutor {
                 "Random" to { r -> randomMut(r, instance) },
                 "Heuristic" to { r -> heuristic(weightMatrix, r) },
                 "Greedy" to { r -> greedyLs(lsBrowser, r, isBetter) },
-                "Steepest" to { r -> steepestLs(stBrowser, r, isBetter) }
+                "Greedy Random Start" to { r -> greedyLs(greedyNB(r), r, isBetter) },
+                "Steepest" to { r -> steepestLs(stBrowser, r, isBetter) },
+                "Steepest Random Start" to { r -> steepestLs(steepestNB(r), r, isBetter) }
         ).forEach { (mutatorName, mutatorFactory) ->
             val random = Random(randomSeed)
             val collectedResults = mutableListOf<Pair<SolutionProposal, Progress>>()
@@ -71,6 +74,9 @@ private fun randomMut(random: Random, instance: Instance) =
 
 private fun Params.steepestLs(stBrowser: SteepestNeighbourhoodBrowser, random: Random, isBetter: SolutionComparator) =
         LocalSearchMutator(stBrowser) prependWithRandom random to notImprovingSC(isBetter).skipFirstCheck
+
+private fun greedyNB(random: Random) = GreedyNeighbourhoodBrowser(0.0, { random.nextInt(it) }, LOWER_SOLUTION_VALUE)
+private fun steepestNB(random: Random) = SteepestNeighbourhoodBrowser(0.0, { random.nextInt(it) }, LOWER_SOLUTION_VALUE)
 
 private fun Params.greedyLs(lsBrowser: GreedyNeighbourhoodBrowser, random: Random, isBetter: SolutionComparator) =
         LocalSearchMutator(lsBrowser) prependWithRandom random to notImprovingSC(isBetter).skipFirstCheck

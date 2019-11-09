@@ -18,7 +18,7 @@ internal class SteepestNeighbourhoodBrowserTest {
             on { delta(1, 3, indices) } doReturn 4.0
             on { delta(4, 1, indices) } doReturn 0.0
         }
-        val browser = SteepestNeighbourhoodBrowser(0.0) { a, b -> a < b }
+        val browser = SteepestNeighbourhoodBrowser(0.0, { 0 }) { a, b -> a < b }
         val result = browser.browse(indices, se)
         assertEquals(1, result.size) { "Expected only one result" }
         val (from, to, resultValue) = result.first()
@@ -42,7 +42,7 @@ internal class SteepestNeighbourhoodBrowserTest {
             on { delta(1, 3, indices) } doReturn -100000.0
             on { delta(2, 3, indices) } doReturn -1.0
         }
-        val browser = SteepestNeighbourhoodBrowser(Double.NEGATIVE_INFINITY) { a, b -> a < b }
+        val browser = SteepestNeighbourhoodBrowser(Double.NEGATIVE_INFINITY, {0}) { a, b -> a < b }
         val result = browser.browse(indices, se)
         assertEquals(1, result.size) { "Expected only one result" }
         val (from, to, resultValue) = result.first()
