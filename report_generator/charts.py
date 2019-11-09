@@ -180,6 +180,8 @@ class SingleInstanceChart(DefaultChart):
         plt.tight_layout()
         return plt
 
+bar_width = 0.1
+
 
 class CompareChart(DefaultChart):
     def __init__(self, name, title, json_data, ctype, alg_types=None, opacity=0.7, ylabel=None, xlabel=None):
@@ -206,10 +208,10 @@ class CompareChart(DefaultChart):
         best_times = [min(x) for x in best_times]
         return best_times
 
-    def __plot_scores(self, alg, marker: MarkerSpec):
+    def __plot_scores(self, alg, marker: MarkerSpec, positions: [float]):
         scores = [x[alg]['score'][self.ctype.value] for x in self.json_data.values()]
-        y = [1/(y/x) for x, y in zip(self.originals, scores)]
 
+        y = [1/(y/x) for x, y in zip(self.originals, scores)]
         if self.ctype == CType.AVG:
             self.xlabel = 'Jakość (przypadek średni)'
             e = []
@@ -218,50 +220,50 @@ class CompareChart(DefaultChart):
                 e.append(0 if len(x) < 2 else statistics.stdev(x))
 
             e = [0 if std == 0 else avg - (1 / ((std + score)/org)) for std, org, avg, score in zip(e, self.originals, y, scores)]
-
-            plt.errorbar(self.labels, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None,
+            plt.errorbar(positions, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None,
                          ls='none', marker=marker.sign, label=alg, color=marker.color) #, uplims=True, lolims=True)
         else:
-            plt.scatter(self.labels, y, marker=marker.sign, label=alg, color=marker.color)
+            plt.scatter(positions, y, marker=marker.sign, label=alg, color=marker.color)
 
         if self.ctype == CType.MAX:
             self.xlabel = 'Jakość (przypadek najgorszy)'
         elif self.ctype == CType.MIN:
             self.xlabel = 'Jakość (przypadek najlepszy)'
-        
         plt.ylim(0.0, 1.2) # todo: erase 0.0 
 
-    def __plot_times(self, alg, marker: MarkerSpec):
+    def __plot_times(self, alg, marker: MarkerSpec, positions: [float]):
         y = self.times
-        plt.scatter(self.labels, y, marker=marker.sign, color=marker.color, label=alg)
+        plt.scatter(positions, y, marker=marker.sign, color=marker.color, label=alg)
         self.xlabel = 'Średni czas działania'
         plt.yscale('log')
 
-    def __plot_steps(self, alg, marker: MarkerSpec):
+    def __plot_steps(self, alg, marker: MarkerSpec, positions: [float]):
         steps = []
         for a in self.attempts:
             x = [x['steps'][-1]['first'] for x in a]
             steps.append(x)
         y = [statistics.mean(x) for x in steps]
         e = [0 if len(x) < 2 else statistics.stdev(x) for x in steps]
-        plt.errorbar(self.labels, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=marker.sign, label=alg, color=marker.color)
+        plt.errorbar(positions, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=marker.sign, label=alg, color=marker.color)
         self.xlabel = 'Średnia liczba kroków algorytmu'
         plt.yscale('log')
 
-    def __plot_efficiency(self, alg, marker: MarkerSpec):
+    def __plot_efficiency(self, alg, marker: MarkerSpec, positions: [float]):
         scores = [x[alg]['score']['avg'] for x in self.json_data.values()]
         efficiency = [(best/avg/(time/best_time)) for best, avg, time, best_time in zip(self.originals, scores, self.times, self.best_times)]
-        plt.scatter(self.labels, efficiency, marker=marker.sign, label=alg, color=marker.color)
+        plt.scatter(positions, efficiency, marker=marker.sign, label=alg, color=marker.color)
         self.xlabel = 'Efektywność algorytmu'
 
     def create_plt(self):
         self.labels = (self.json_data.keys())
         self.best_times = self.__get_best_times()
-
-        x = np.arange(len(self.labels))
+        plt.grid(True, linestyle='--')
+        total = len(next(iter(self.json_data.values())))
         i = 0
+        index = np.arange(len(list(self.labels)))
 
         for alg in next(iter(self.json_data.values())):
+            positions = index + (i - total / 2) * bar_width
             # plot only selected algorithms (default all)
             if self.alg_types is None or alg in self.alg_types:
                 self.originals = [x[alg]['score']['original'] for x in self.json_data.values()]
@@ -269,16 +271,17 @@ class CompareChart(DefaultChart):
                 self.times = [x[alg]['averageTime'] for x in self.json_data.values()]
 
                 if self.ctype in ([CType.AVG, CType.MAX, CType.MIN]): 
-                    self.__plot_scores(alg, ALG_MARKERS[alg])
+                    self.__plot_scores(alg, ALG_MARKERS[alg], positions)
                 
                 elif self.ctype == CType.TIME:
-                    self.__plot_times(alg, ALG_MARKERS[alg])
+                    self.__plot_times(alg, ALG_MARKERS[alg], positions)
 
                 elif self.ctype == CType.AVG_STEPS:
-                    self.__plot_steps(alg, ALG_MARKERS[alg])
+                    self.__plot_steps(alg, ALG_MARKERS[alg], positions)
 
                 elif self.ctype == CType.TIME_EFF:
-                    self.__plot_efficiency(alg, ALG_MARKERS[alg])
+                    self.__plot_efficiency(alg, ALG_MARKERS[alg], positions)
+                plt.xticks(index, self.labels)
 
                 i += 1
 
