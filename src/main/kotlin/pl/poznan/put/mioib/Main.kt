@@ -64,7 +64,7 @@ fun main(args: Array<String>) = ProgramExecutor {
                 "Steepest-ZeroNBStart-HeuristicInit" to { r -> steepestLsH(stBrowser, weightMatrix, r, isBetter) },
                 "Steepest-ContinuousNBStart-RandomInit" to { r -> steepestLs(statefulSteepest(), r, isBetter) },
                 "Steepest-ContinuousNBStart-HeuristicInit" to { r -> steepestLsH(statefulSteepest(), weightMatrix, r, isBetter) },
-                "Simmulated Annealing" to { r -> simulatedAnnealing(r) }
+                "Simulated Annealing" to { r -> simulatedAnnealing(r, weightMatrix) }
         ).forEach { (mutatorName, mutatorFactory) ->
             val random = Random(randomSeed)
             val collectedResults = mutableListOf<Pair<SolutionProposal, Progress>>()
@@ -88,8 +88,8 @@ private inline fun stateful(f: ((Int) -> Int) -> NeighbourhoodBrowser): Stateful
     return browser
 }
 
-private fun simulatedAnnealing(random: Random) =
-        SimulatedAnnealingMutator(RandomNeighbourhoodBrowser(random), random, LOWER_SOLUTION_VALUE) to endlessSolutions()
+private fun simulatedAnnealing(random: Random, weightMatrix: SymmetricWeightMatrix) =
+        SimulatedAnnealingMutator(RandomNeighbourhoodBrowser(random), random, LOWER_SOLUTION_VALUE) prependWith nearest(weightMatrix, random) to endlessSolutions()
 
 private fun randomMut(random: Random, instance: Instance) =
         RandomMutator(random, instance.size * instance.size / 3) to endlessSolutions()
