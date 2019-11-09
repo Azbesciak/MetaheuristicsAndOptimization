@@ -11,6 +11,7 @@ class NearestNeighborMutator(
         private val isBetter: SolutionValueComparator,
         private val rootLocationIndexSource: (bound: Int) -> Int
 ) : SolutionMutator {
+    private var wasUsed = false
     override fun mutate(solution: SolutionProposal, solutionEvaluator: SolutionEvaluator): SolutionProposal {
         val indicesNumber = solution.sequence.size
         val start = rootLocationIndexSource(indicesNumber)
@@ -22,6 +23,7 @@ class NearestNeighborMutator(
         (1 until indicesNumber).forEach {
             current = findNextIndice(visited, current, sequence, it)
         }
+        wasUsed = true
         return SolutionProposal(sequence, solutionEvaluator.solution(sequence))
     }
 
@@ -41,6 +43,6 @@ class NearestNeighborMutator(
         return best
     }
 
-    override fun canMutate() = true
+    override fun canMutate() = !wasUsed
 
 }
