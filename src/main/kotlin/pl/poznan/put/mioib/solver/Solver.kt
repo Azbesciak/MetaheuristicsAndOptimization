@@ -21,7 +21,7 @@ object Solver {
         val initialSequence = instance.locations.indices.toList().toIntArray()
         val steps = mutableListOf<Triple<Int, Double, Double>>()
         var recentSolutionCopy: SolutionProposal? = null
-        var best = SolutionProposal(initialSequence, Double.MAX_VALUE)
+        var best = SolutionProposal(initialSequence, evaluator.solution(initialSequence))
         stopCondition.initialize()
         var recentSolution = best
         var i = 0
