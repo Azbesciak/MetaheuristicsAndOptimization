@@ -4,7 +4,6 @@ import pl.poznan.put.mioib.algorithm.mutators.MergedMutator
 import pl.poznan.put.mioib.algorithm.mutators.SolutionMutator
 import pl.poznan.put.mioib.algorithm.mutators.ls.GreedyNeighbourhoodBrowser
 import pl.poznan.put.mioib.algorithm.mutators.ls.LocalSearchMutator
-import pl.poznan.put.mioib.algorithm.mutators.ls.RandomNeighbourhoodBrowser
 import pl.poznan.put.mioib.algorithm.mutators.ls.SteepestNeighbourhoodBrowser
 import pl.poznan.put.mioib.algorithm.mutators.nearestneighbor.NearestNeighborMutator
 import pl.poznan.put.mioib.algorithm.mutators.random.RandomMutator
