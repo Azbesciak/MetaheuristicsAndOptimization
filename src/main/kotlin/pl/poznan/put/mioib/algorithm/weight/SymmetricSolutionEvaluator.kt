@@ -24,7 +24,7 @@ class SymmetricSolutionEvaluator(
         var fi = firstIndex
         var si = secondIndex
         val lastIndex = sequence.size - 1
-        if (fi > si || (fi == 0 && si == lastIndex)) {
+        if ((fi > si && !(fi == lastIndex && si == 0)) || (fi == 0 && si == lastIndex)) {
             fi = secondIndex
             si = firstIndex
         }

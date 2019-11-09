@@ -5,6 +5,7 @@ import pl.poznan.put.mioib.algorithm.mutators.SolutionMutator
 import pl.poznan.put.mioib.algorithm.mutators.ls.*
 import pl.poznan.put.mioib.algorithm.mutators.nearestneighbor.NearestNeighborMutator
 import pl.poznan.put.mioib.algorithm.mutators.random.RandomMutator
+import pl.poznan.put.mioib.algorithm.mutators.sa.SimulatedAnnealingMutator
 import pl.poznan.put.mioib.algorithm.stopcondition.DisabledStopCondition
 import pl.poznan.put.mioib.algorithm.stopcondition.IterationsCountStopCondition
 import pl.poznan.put.mioib.algorithm.stopcondition.NotImprovingSolutionStopCondition
@@ -44,12 +45,12 @@ fun main(args: Array<String>) = ProgramExecutor {
         val evaluator = SymmetricSolutionEvaluator(weightMatrix)
         val isBetter = MIN_SOLUTION
         /**
-            ZeroNBStart - neighbourhood is explored from zero
-            RandomNBStart - neighbourhood is explored from random value
-            ContinuousNBStart - recently returned from is remembered, it is starting point for next iteration
-            HeuristicInit - Algorithm is initialized with heuristic solution
-            RandomInit - Algorithm is initialized with random solution
-        **/
+        ZeroNBStart - neighbourhood is explored from zero
+        RandomNBStart - neighbourhood is explored from random value
+        ContinuousNBStart - recently returned from is remembered, it is starting point for next iteration
+        HeuristicInit - Algorithm is initialized with heuristic solution
+        RandomInit - Algorithm is initialized with random solution
+         **/
         arrayOf<Executor>(
                 "Random" to { r -> randomMut(r, instance) },
                 "Heuristic" to { r -> heuristic(weightMatrix, r) },
@@ -62,7 +63,8 @@ fun main(args: Array<String>) = ProgramExecutor {
                 "Steepest-RandomNBStart-RandomInit" to { r -> steepestLs(steepestNB(r), r, isBetter) },
                 "Steepest-ZeroNBStart-HeuristicInit" to { r -> steepestLsH(stBrowser, weightMatrix, r, isBetter) },
                 "Steepest-ContinuousNBStart-RandomInit" to { r -> steepestLs(statefulSteepest(), r, isBetter) },
-                "Steepest-ContinuousNBStart-HeuristicInit" to { r -> steepestLsH(statefulSteepest(), weightMatrix, r, isBetter) }
+                "Steepest-ContinuousNBStart-HeuristicInit" to { r -> steepestLsH(statefulSteepest(), weightMatrix, r, isBetter) },
+                "Simmulated Annealing" to { r -> simulatedAnnealing(r) }
         ).forEach { (mutatorName, mutatorFactory) ->
             val random = Random(randomSeed)
             val collectedResults = mutableListOf<Pair<SolutionProposal, Progress>>()
@@ -86,10 +88,17 @@ private inline fun stateful(f: ((Int) -> Int) -> NeighbourhoodBrowser): Stateful
     return browser
 }
 
+private fun simulatedAnnealing(random: Random) =
+        SimulatedAnnealingMutator(RandomNeighbourhoodBrowser(random), random, LOWER_SOLUTION_VALUE) to endlessSolutions()
+
 private fun randomMut(random: Random, instance: Instance) =
-        RandomMutator(random, instance.size * instance.size / 3) to object : StopCondition {
-            override fun shouldStop(solution: SolutionProposal) = false
-        }
+        RandomMutator(random, instance.size * instance.size / 3) to endlessSolutions()
+
+private fun endlessSolutions(): StopCondition {
+    return object : StopCondition {
+        override fun shouldStop(solution: SolutionProposal) = false
+    }
+}
 
 private fun Params.steepestLs(stBrowser: NeighbourhoodBrowser, random: Random, isBetter: SolutionComparator) =
         LocalSearchMutator(stBrowser) prependWithRandom random to notImprovingSC(isBetter).skipFirstCheck
@@ -168,7 +177,7 @@ private fun solve(
         progressDumpInterval = dumpInterval
 )
 
-private fun Params.notImprovingSC(isBetter: SolutionComparator) =
-        NotImprovingSolutionStopCondition(notImprovingSolutions, isBetter)
+private fun Params.notImprovingSC(isBetter: SolutionComparator, count: Int = 0) =
+        NotImprovingSolutionStopCondition(count, isBetter)
 
 private fun onceSC() = IterationsCountStopCondition(1)
