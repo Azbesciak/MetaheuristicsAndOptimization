@@ -26,13 +26,13 @@ ALG_MARKERS = {
 }
 
 
-def generate(name, title, instances, chart_type, alg_types=None, instance=None, xlabel=None, ylabel=None):
+def generate(name, title, instances, chart_type, alg_types=None, instance=None, xlabel=None, ylabel=None, map_alg_name=True):
     COMPARE_TYPES = [CType.MAX, CType.MIN, CType.AVG, CType.TIME, CType.TIME_EFF, CType.AVG_STEPS]
 
     if chart_type in COMPARE_TYPES:
-        return CompareChart(name, title, instances, chart_type, alg_types, xlabel=xlabel, ylabel=ylabel).generate()
+        return CompareChart(name, title, instances, chart_type, alg_types, xlabel=xlabel, ylabel=ylabel, map_alg_name=map_alg_name).generate()
     else:
-        return SingleInstanceChart(name, instance, title, instances, chart_type, alg_types, xlabel=xlabel, ylabel=ylabel).generate()
+        return SingleInstanceChart(name, instance, title, instances, chart_type, alg_types, xlabel=xlabel, ylabel=ylabel, map_alg_name=map_alg_name).generate()
 
 
 class CType(Enum):
@@ -49,7 +49,7 @@ class CType(Enum):
 
 
 class DefaultChart:
-    def __init__(self, name, title, json_data, chart_type='default', save=True, ylabel=None, xlabel=None):
+    def __init__(self, name, title, json_data, chart_type='default', save=True, ylabel=None, xlabel=None, map_alg_name=True):
         plt.clf()
 
         self.xlabel = xlabel
@@ -63,6 +63,10 @@ class DefaultChart:
         self.file_path = None
         self.output = StringIO()
         self.save = save
+        self.map_alg_name = map_alg_name
+
+    def get_mapped_alg_name(self, name: str):
+        return name.split('-')[0] if self.map_alg_name else name
 
     def create_plt(self):
         raise NotImplementedError
@@ -92,16 +96,16 @@ class DefaultChart:
 
 
 class SingleInstanceChart(DefaultChart):
-    def __init__(self, name, instance, title, json_data, chart_type="single", alg_types=None, xlabel=None, ylabel=None):
+    def __init__(self, name, instance, title, json_data, chart_type="single", alg_types=None, xlabel=None, ylabel=None, map_alg_name=True):
         self.instance = instance
         self.alg_types = alg_types
-        super().__init__(name, title, json_data, chart_type, xlabel=xlabel, ylabel=ylabel)
+        self.map_alg_name = map_alg_name
+        super().__init__(name, title, json_data, chart_type, xlabel=xlabel, ylabel=ylabel, map_alg_name=map_alg_name)
         self.file_path = '{}/{}{}.png'.format(self.dir_path, self.instance, self.name)
 
     def __plot_begend(self):
         alg_name = self.summary['type']
         axs = self.axs[self.alg_types.index(alg_name)]
-
         attempts = self.summary['attempts']
         attempts_steps = [x['steps'] for x in attempts]
 
@@ -112,7 +116,7 @@ class SingleInstanceChart(DefaultChart):
             end.append(attempt_steps[0]['second'])
             beg.append(attempt_steps[1]['second'])
 
-        axs.set_title(alg_name)
+        axs.set_title(self.get_mapped_alg_name(alg_name))
         axs.scatter(beg, end, s=0.5, color=ALG_MARKERS[alg_name].color)
 
     def __plot_restarts(self, only_best=False):
@@ -127,7 +131,7 @@ class SingleInstanceChart(DefaultChart):
         scores = [x['score'] for x in attempts]
         y = [min(scores[0:x]) if only_best else statistics.mean(scores[0:x]) for x in range(1, len(scores)+1)]
 
-        axs.set_title(alg_name)
+        axs.set_title(self.get_mapped_alg_name(alg_name))
         axs.scatter(ox, y, s=0.8, color=ALG_MARKERS[alg_name].color)
 
         axs.set_xlabel(self.xlabel)
@@ -142,7 +146,7 @@ class SingleInstanceChart(DefaultChart):
         scores = [x['score'] for x in attempts]
         ox = [1/(x/original) for x in scores]
 
-        axs.set_title(self.summary['type'])
+        axs.set_title(self.get_mapped_alg_name(self.summary['type']))
         axs.scatter(ox, y, s=0.5)
 
         axs.set_xlabel(self.xlabel)
@@ -184,14 +188,14 @@ bar_width = 0.1
 
 
 class CompareChart(DefaultChart):
-    def __init__(self, name, title, json_data, ctype, alg_types=None, opacity=0.7, ylabel=None, xlabel=None):
+    def __init__(self, name, title, json_data, ctype, alg_types=None, opacity=0.7, ylabel=None, xlabel=None, map_alg_name=True):
         self.ctype = ctype
         self.alg_types = alg_types
         self.opacity = opacity
         self.marker = MarkerSpec(None, None)
-
-        super().__init__(name, title, json_data, ctype, xlabel=xlabel, ylabel=ylabel)
-        self.file_path = '{}/{}{}.png'.format(self.dir_path, 'compare', self.ctype.value)
+        self.map_alg_name = map_alg_name
+        super().__init__(name, title, json_data, ctype, xlabel=xlabel, ylabel=ylabel, map_alg_name=map_alg_name)
+        self.file_path = '{}/{}{}.png'.format(self.dir_path, 'compare', self.name)
 
     def generate(self):
         plt.xlabel(self.ylabel)
@@ -222,9 +226,9 @@ class CompareChart(DefaultChart):
 
             e = [0 if std == 0 else avg - (1 / ((std + score)/org)) for std, org, avg, score in zip(e, self.originals, y, scores)]
             plt.errorbar(positions, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None,
-                         ls='none', marker=self.marker.sign, label=alg, color=self.marker.color) #, uplims=True, lolims=True)
+                         ls='none', marker=self.marker.sign, label=self.get_mapped_alg_name(alg), color=self.marker.color) #, uplims=True, lolims=True)
         else:
-            plt.scatter(positions, y, marker=self.marker.sign, label=alg, color=self.marker.color)
+            plt.scatter(positions, y, marker=self.marker.sign, label=self.get_mapped_alg_name(alg), color=self.marker.color)
 
         if self.ctype == CType.MAX:
             self.xlabel = 'Jakość (przypadek najgorszy)'
@@ -234,7 +238,7 @@ class CompareChart(DefaultChart):
 
     def __plot_times(self, alg, positions: [float]):
         y = self.times
-        plt.scatter(positions, y, marker=self.marker.sign, color=self.marker.color, label=alg)
+        plt.scatter(positions, y, marker=self.marker.sign, color=self.marker.color, label=self.get_mapped_alg_name(alg))
         self.xlabel = 'Średni czas działania'
         plt.yscale('log')
 
@@ -245,14 +249,14 @@ class CompareChart(DefaultChart):
             steps.append(x)
         y = [statistics.mean(x) for x in steps]
         e = [0 if len(x) < 2 else statistics.stdev(x) for x in steps]
-        plt.errorbar(positions, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=self.marker.sign, label=alg, color=self.marker.color)
+        plt.errorbar(positions, y, alpha=self.opacity, capsize=4, capthick=1.2, yerr=e, xerr=None, ls='none', marker=self.marker.sign, label=self.get_mapped_alg_name(alg), color=self.marker.color)
         self.xlabel = 'Średnia liczba kroków algorytmu'
         plt.yscale('log')
 
     def __plot_efficiency(self, alg, positions: [float]):
         scores = [x[alg]['score']['avg'] for x in self.json_data.values()]
         efficiency = [(best/avg/(time/best_time)) for best, avg, time, best_time in zip(self.originals, scores, self.times, self.best_times)]
-        plt.scatter(positions, efficiency, marker=self.marker.sign, label=alg, color=self.marker.color)
+        plt.scatter(positions, efficiency, marker=self.marker.sign, label=self.get_mapped_alg_name(alg), color=self.marker.color)
         self.xlabel = 'Efektywność algorytmu'
 
     def create_plt(self):

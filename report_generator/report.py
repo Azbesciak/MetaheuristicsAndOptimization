@@ -9,7 +9,27 @@ from io import StringIO
 import shutil
 from zipfile import ZipFile
 
-OUTPUT_DIR='out'
+OUTPUT_DIR = 'out'
+
+GREEDY_ALGS = [
+    'Greedy-ContinuousNBStart-HeuristicInit',
+    'Greedy-ContinuousNBStart-RandomInit',
+    'Greedy-RandomNBStart-RandomInit',
+    'Greedy-ZeroNBStart-HeuristicInit',
+    'Greedy-ZeroNBStart-RandomInit'
+    ]
+
+STEEPEST_ALGS = [
+    'Steepest-ContinuousNBStart-HeuristicInit',
+    'Steepest-ContinuousNBStart-RandomInit',
+    'Steepest-RandomNBStart-RandomInit',
+    'Steepest-ZeroNBStart-HeuristicInit',
+    'Steepest-ZeroNBStart-RandomInit'
+    ]
+
+SUMMARY_ALGS_ALL = ['Random', 'Heuristic', 'Steepest-ZeroNBStart-HeuristicInit', 'Greedy-ZeroNBStart-HeuristicInit']
+
+SUMMARY_ALGS_SELECTED = ['Steepest-ZeroNBStart-HeuristicInit', 'Greedy-ZeroNBStart-HeuristicInit']
 
 def generate():
     instances = dict()
@@ -24,13 +44,17 @@ def generate():
 
     # Generate global instances charts
     try:
-        max_scores = charts.generate('best_cmp', "Najlepsze wyniki", instances, charts.CType.MIN)
+        charts.generate('avg_cmp_greedy', "Średnie wyniki", instances, charts.CType.AVG, GREEDY_ALGS, map_alg_name=False)
 
-        min_scores = charts.generate('worst_cmp',  "Najgorsze wyniki", instances, charts.CType.MAX)
+        charts.generate('avg_cmp_steepest', "Średnie wyniki", instances, charts.CType.AVG, STEEPEST_ALGS, map_alg_name=False)
 
-        avg_scores = charts.generate('avg_cmp', "Średnie wyniki", instances, charts.CType.AVG)
+        max_scores = charts.generate('best_cmp', "Najlepsze wyniki", instances, charts.CType.MIN, SUMMARY_ALGS_ALL)
+
+        min_scores = charts.generate('worst_cmp',  "Najgorsze wyniki", instances, charts.CType.MAX, SUMMARY_ALGS_ALL)
+
+        avg_scores = charts.generate('avg_cmp', "Średnie wyniki", instances, charts.CType.AVG, SUMMARY_ALGS_ALL)
         
-        avg_times = charts.generate('times_cmp', "Czasy", instances, charts.CType.TIME)
+        avg_times = charts.generate('times_cmp', "Czasy", instances, charts.CType.TIME, SUMMARY_ALGS_ALL)
 
         efiiciency = charts.generate('efficiency_cmp', "Efektywność", instances, charts.CType.TIME_EFF, alg_types=['Greedy', "Steepest"])
 
