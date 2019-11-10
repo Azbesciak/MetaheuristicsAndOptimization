@@ -117,7 +117,7 @@ class SingleInstanceChart(DefaultChart):
             beg.append(attempt_steps[1]['second'])
 
         axs.set_title(self.get_mapped_alg_name(alg_name))
-        axs.scatter(beg, end, s=0.5, color=ALG_MARKERS[alg_name].color)
+        axs.scatter(beg, end, s=0.5, color=self.marker.color)
 
     def __plot_restarts(self, only_best=False):
         # self.ylabel = 'Liczba powtórzeń'
@@ -132,7 +132,7 @@ class SingleInstanceChart(DefaultChart):
         y = [min(scores[0:x]) if only_best else statistics.mean(scores[0:x]) for x in range(1, len(scores)+1)]
 
         axs.set_title(self.get_mapped_alg_name(alg_name))
-        axs.scatter(ox, y, s=0.8, color=ALG_MARKERS[alg_name].color)
+        axs.scatter(ox, y, s=0.8, color=self.marker.color)
 
         axs.set_xlabel(self.xlabel)
         axs.set_ylabel(self.ylabel)
@@ -165,6 +165,7 @@ class SingleInstanceChart(DefaultChart):
 
         for alg_type in self.json_data[self.instance].keys(): 
             if alg_type in self.alg_types:
+                self.marker=ALG_MARKERS.get(self.get_mapped_alg_name(alg_type))
                 # plt.subplot(1, len(self.alg_types), self.alg_types.index(alg_type) + 1)
                 # plt.title(alg_type)
 
@@ -200,7 +201,7 @@ class CompareChart(DefaultChart):
     def generate(self):
         plt.xlabel(self.ylabel)
         plt.ylabel(self.xlabel)
-        plt.legend()
+        plt.legend(loc='best')
         return super().generate()
 
     def __get_best_times(self):

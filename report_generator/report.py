@@ -28,8 +28,8 @@ STEEPEST_ALGS = [
     ]
 
 SUMMARY_ALGS_ALL = ['Random', 'Heuristic', 'Steepest-ZeroNBStart-HeuristicInit', 'Greedy-ZeroNBStart-HeuristicInit']
-
 SUMMARY_ALGS_SELECTED = ['Steepest-ZeroNBStart-HeuristicInit', 'Greedy-ZeroNBStart-HeuristicInit']
+RANDOM_ALGS_SELECTED = ['Greedy-RandomNBStart-RandomInit', 'Steepest-RandomNBStart-RandomInit']
 
 def generate():
     instances = dict()
@@ -44,9 +44,9 @@ def generate():
 
     # Generate global instances charts
     try:
-        charts.generate('avg_cmp_greedy', "Średnie wyniki", instances, charts.CType.AVG, GREEDY_ALGS, map_alg_name=False)
+        charts.generate('avg_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.AVG, GREEDY_ALGS, map_alg_name=False)
 
-        charts.generate('avg_cmp_steepest', "Średnie wyniki", instances, charts.CType.AVG, STEEPEST_ALGS, map_alg_name=False)
+        charts.generate('avg_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.AVG, STEEPEST_ALGS, map_alg_name=False)
 
         max_scores = charts.generate('best_cmp', "Najlepsze wyniki", instances, charts.CType.MIN, SUMMARY_ALGS_ALL)
 
@@ -56,9 +56,9 @@ def generate():
         
         avg_times = charts.generate('times_cmp', "Czasy", instances, charts.CType.TIME, SUMMARY_ALGS_ALL)
 
-        efiiciency = charts.generate('efficiency_cmp', "Efektywność", instances, charts.CType.TIME_EFF, alg_types=['Greedy', "Steepest"])
+        efiiciency = charts.generate('efficiency_cmp', "Efektywność", instances, charts.CType.TIME_EFF, alg_types=SUMMARY_ALGS_SELECTED)
 
-        avg_steps = charts.generate('steps_cmp', "Kroki", instances, charts.CType.AVG_STEPS, alg_types=['Greedy', "Steepest"])
+        avg_steps = charts.generate('steps_cmp', "Kroki", instances, charts.CType.AVG_STEPS, alg_types=SUMMARY_ALGS_SELECTED)
 
     except Exception as e:
         print("Error: Generacja nie powiodła się \n\t{}: {}".format(type(e), e))
@@ -67,21 +67,18 @@ def generate():
     for instance in instances.keys():
         print(instance)
 
-        try:
-            charts.generate("{}_progress_avg".format(instance), "Postępy AVG", instances, charts.CType.PROGRESS_AVG, alg_types=['Greedy', 'Steepest'], instance=instance,
-            xlabel='Liczba restartów', ylabel='Średnie rozwiązanie')
+        charts.generate("{}_progress_avg".format(instance), "Postępy AVG", instances, charts.CType.PROGRESS_AVG, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
+        xlabel='Liczba restartów', ylabel='Średnie rozwiązanie')
 
-            charts.generate("{}_progress_best".format(instance), "Postępy BEST", instances, charts.CType.PROGRESS_BEST, alg_types=['Greedy', 'Steepest'], instance=instance,
-            xlabel='Liczba restartów', ylabel='Najlepsze rozwiązanie')
+        charts.generate("{}_progress_best".format(instance), "Postępy BEST", instances, charts.CType.PROGRESS_BEST, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
+        xlabel='Liczba restartów', ylabel='Najlepsze rozwiązanie')
 
-            charts.generate("{}_begend".format(instance), "Początkowe/Końcowe", instances, charts.CType.BEG_END, alg_types=['Greedy', 'Steepest'], instance=instance,
-            xlabel='Początkowe rozwiązanie', ylabel='Końcowe rozwiązanie')
+        charts.generate("{}_begend".format(instance), "Początkowe/Końcowe", instances, charts.CType.BEG_END, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
+        xlabel='Początkowe rozwiązanie', ylabel='Końcowe rozwiązanie')
 
-            charts.generate("{}_similaritygi".format(instance), "Podobieństwo", instances, charts.CType.SIMILARITY, alg_types=['Greedy', 'Steepest'], instance=instance,
-            xlabel='Jakość', ylabel='Podobieństwo')
+        charts.generate("{}_similaritygi".format(instance), "Podobieństwo", instances, charts.CType.SIMILARITY, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
+        xlabel='Jakość', ylabel='Podobieństwo')
 
-        except Exception as e:
-            print("Error: Generacja {} nie powiodła się \n\t{}: {}".format(instance, type(e), e))
 
 
 parser = argparse.ArgumentParser()
