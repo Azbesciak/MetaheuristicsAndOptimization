@@ -11,15 +11,15 @@ import java.time.Duration
 class ProgramExecutor(private val task: Params.() -> Unit) : CliktCommand() {
     private val instancePath by option(help = "Instance path without extension; may be shortcut").required()
     private val solutionValuesPath by option(help = "Solutions' values path").required()
-    private val minRetries by option(help = "min number of retries").int().default(0).validate { it >= 0 }
+    private val minRetries by option(help = "min number of retries").int().default(0).validate { it >= 10 }
     private val warmUp by option(help = "warm up iterations").int().default(0).validate { it >= 0 }
     private val minDuration by option(help = "minimum execution time").default("PT1.0S")
     private val notImprovingSolutions by option(help = "max number of not improving solutions")
             .int().default(0).validate { it >= 0 }
     private val dumpInterval by option(help = "how often inner solutions should be dumped")
-            .int().default(100).validate { it >= 0 }
+            .int().default(Int.MAX_VALUE).validate { it >= 0 }
     private val randomSeed by option(help = "random seed value").int().default(1234)
-    private val solutionsToCollect by option(help = "number of solutions to collect").int().default(10)
+    private val solutionsToCollect by option(help = "number of solutions to collect").int().default(300)
     private val showProgress by option(help = "should show progress").default("false")
 
     override fun run() {

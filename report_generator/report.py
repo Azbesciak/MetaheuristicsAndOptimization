@@ -9,7 +9,27 @@ from io import StringIO
 import shutil
 from zipfile import ZipFile
 
-OUTPUT_DIR='out'
+OUTPUT_DIR = 'out'
+
+GREEDY_ALGS = [
+    'Greedy-ContinuousNBStart-HeuristicInit',
+    'Greedy-ContinuousNBStart-RandomInit',
+    'Greedy-RandomNBStart-RandomInit',
+    'Greedy-ZeroNBStart-HeuristicInit',
+    'Greedy-ZeroNBStart-RandomInit'
+    ]
+
+STEEPEST_ALGS = [
+    'Steepest-ContinuousNBStart-HeuristicInit',
+    'Steepest-ContinuousNBStart-RandomInit',
+    'Steepest-RandomNBStart-RandomInit',
+    'Steepest-ZeroNBStart-HeuristicInit',
+    'Steepest-ZeroNBStart-RandomInit'
+    ]
+
+SUMMARY_ALGS_ALL = ['Random', 'Heuristic', 'Steepest-ZeroNBStart-HeuristicInit', 'Greedy-ZeroNBStart-HeuristicInit']
+SUMMARY_ALGS_SELECTED = ['Steepest-ZeroNBStart-HeuristicInit', 'Greedy-ZeroNBStart-HeuristicInit']
+RANDOM_ALGS_SELECTED = ['Greedy-RandomNBStart-RandomInit', 'Steepest-RandomNBStart-RandomInit']
 
 def generate():
     instances = dict()
@@ -22,31 +42,43 @@ def generate():
                     instances[summary['name']] = dict()
                 instances[summary['name']][summary['type']] = summary
 
-    # Generate charts
+    # Generate global instances charts
+    try:
+        charts.generate('avg_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.AVG, GREEDY_ALGS, map_alg_name=False)
+
+        charts.generate('avg_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.AVG, STEEPEST_ALGS, map_alg_name=False)
+
+        max_scores = charts.generate('best_cmp', "Najlepsze wyniki", instances, charts.CType.MIN, SUMMARY_ALGS_ALL)
+
+        min_scores = charts.generate('worst_cmp',  "Najgorsze wyniki", instances, charts.CType.MAX, SUMMARY_ALGS_ALL)
+
+        avg_scores = charts.generate('avg_cmp', "Średnie wyniki", instances, charts.CType.AVG, SUMMARY_ALGS_ALL)
+        
+        avg_times = charts.generate('times_cmp', "Czasy", instances, charts.CType.TIME, SUMMARY_ALGS_ALL)
+
+        efiiciency = charts.generate('efficiency_cmp', "Efektywność", instances, charts.CType.TIME_EFF, alg_types=SUMMARY_ALGS_SELECTED)
+
+        avg_steps = charts.generate('steps_cmp', "Kroki", instances, charts.CType.AVG_STEPS, alg_types=SUMMARY_ALGS_SELECTED)
+
+    except Exception as e:
+        print("Error: Generacja nie powiodła się \n\t{}: {}".format(type(e), e))
+
+    # Generate single instances charts
     for instance in instances.keys():
-        output = StringIO()
         print(instance)
 
-        try:
-            print('\\section{{{}}}'.format(instance), file=output)
+        charts.generate("{}_progress_avg".format(instance), "Postępy AVG", instances, charts.CType.PROGRESS_AVG, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
+        xlabel='Liczba restartów', ylabel='Średnie rozwiązanie')
 
-            for alg_type in instances[instance].keys(): 
-                summary = instances[instance][alg_type]
-                # print(summary)
-                print('\\subsection{{{}}}'.format(alg_type), file=output)
+        charts.generate("{}_progress_best".format(instance), "Postępy BEST", instances, charts.CType.PROGRESS_BEST, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
+        xlabel='Liczba restartów', ylabel='Najlepsze rozwiązanie')
 
-                summary_report = charts.SummaryChart('summary', summary).generate()
-                print(summary_report, file=output)
+        charts.generate("{}_begend".format(instance), "Początkowe/Końcowe", instances, charts.CType.BEG_END, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
+        xlabel='Początkowe rozwiązanie', ylabel='Końcowe rozwiązanie')
 
-                seq_report = charts.SeqChart('Wyniki ({} uruchomień)'.format(len(summary['attempts'])), summary).generate()
-                print(seq_report, file=output)
+        charts.generate("{}_similaritygi".format(instance), "Podobieństwo", instances, charts.CType.SIMILARITY, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
+        xlabel='Jakość', ylabel='Podobieństwo')
 
-            # Save output as Latex document
-            with open(os.path.join(OUTPUT_DIR, '{}.tex'.format(instance)), 'w') as fd:
-                output.seek(0)
-                shutil.copyfileobj(output, fd)
-        except Exception as e:
-            print("Error: Generacja {} nie powiodła się \n\t{}: {}".format(instance, type(e), e))
 
 
 parser = argparse.ArgumentParser()

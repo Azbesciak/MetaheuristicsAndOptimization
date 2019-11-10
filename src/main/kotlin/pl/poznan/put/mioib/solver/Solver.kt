@@ -7,6 +7,7 @@ import pl.poznan.put.mioib.algorithm.weight.SolutionEvaluator
 import pl.poznan.put.mioib.model.Instance
 import pl.poznan.put.mioib.model.Progress
 import pl.poznan.put.mioib.model.SolutionProposal
+import pl.poznan.put.mioib.shuffle
 
 object Solver {
     fun solve(
@@ -18,13 +19,14 @@ object Solver {
             isBetter: SolutionComparator
     ): Pair<SolutionProposal, Progress> {
         val initialSequence = instance.locations.indices.toList().toIntArray()
-        val steps = mutableListOf<Pair<Int, Double>>()
+        val steps = mutableListOf<Triple<Int, Double, Double>>()
+        var recentSolutionCopy: SolutionProposal? = null
         var best = SolutionProposal(initialSequence, evaluator.solution(initialSequence))
         stopCondition.initialize()
         var recentSolution = best
         var i = 0
         while (!stopCondition.shouldStop(recentSolution) && mutator.canMutate()) {
-            val recentSolutionCopy = recentSolution.copy(sequence = recentSolution.sequence.clone())
+            recentSolutionCopy = recentSolution.copy(sequence = recentSolution.sequence.clone())
             recentSolution = mutator.mutate(recentSolutionCopy, evaluator)
             require(recentSolution.score >= 0) {
                 "${instance.name}: solution score is negative: $recentSolution"
@@ -33,9 +35,11 @@ object Solver {
                 best = recentSolution
             }
             if (i++%progressDumpInterval == 0){
-                steps.add(Pair(i, best.score))
+                steps.add(Triple(i, best.score, recentSolutionCopy.score))
             }
         }
+        steps.add(Triple(i, best.score, recentSolutionCopy!!.score))
+        
         return best to Progress(steps)
     }
 }

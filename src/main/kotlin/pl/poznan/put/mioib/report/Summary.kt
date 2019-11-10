@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import pl.poznan.put.mioib.model.SolutionProposal
 import java.io.File
 import java.lang.Exception
+import java.lang.reflect.Array
 import java.nio.file.Path
 import java.util.*
 
@@ -13,5 +14,6 @@ data class Summary(
         val type: String,
         val averageTime: Double,
         val score: Score,
-        val attempts: List<Attempt> = listOf()
+        val attempts: List<Attempt> = listOf(),
+        val similarity: DoubleArray
 )
