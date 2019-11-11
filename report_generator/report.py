@@ -44,10 +44,10 @@ def generate():
 
     # Generate global instances charts
     try:
-        charts.generate('avg_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.AVG, GREEDY_ALGS, map_alg_name=False, legend_loc_best=False)
-        charts.generate('avg_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.AVG, STEEPEST_ALGS, map_alg_name=False, legend_loc_best=False)
-        charts.generate('efficiency_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.TIME_EFF, GREEDY_ALGS, map_alg_name=False, legend_loc_best=False)
-        charts.generate('efficiency_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.TIME_EFF, STEEPEST_ALGS, map_alg_name=False, legend_loc_best=False)
+        charts.generate('avg_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.AVG, GREEDY_ALGS, map_alg_name=False)
+        charts.generate('avg_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.AVG, STEEPEST_ALGS, map_alg_name=False)
+        charts.generate('efficiency_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.TIME_EFF, GREEDY_ALGS, map_alg_name=False)
+        charts.generate('efficiency_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.TIME_EFF, STEEPEST_ALGS, map_alg_name=False)
 
         max_scores = charts.generate('best_cmp', "Najlepsze wyniki", instances, charts.CType.MIN, SUMMARY_ALGS_ALL)
 
