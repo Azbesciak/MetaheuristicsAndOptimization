@@ -20,7 +20,7 @@ object Solver {
     ): Pair<SolutionProposal, Progress> {
         val initialSequence = instance.locations.indices.toList().toIntArray()
         val steps = mutableListOf<Triple<Int, Double, Double>>()
-        var recentSolutionCopy: SolutionProposal? = null
+        lateinit var recentSolutionCopy: SolutionProposal
         var best = SolutionProposal(initialSequence, evaluator.solution(initialSequence))
         stopCondition.initialize()
         var recentSolution = best
@@ -38,7 +38,7 @@ object Solver {
                 steps.add(Triple(i, best.score, recentSolutionCopy.score))
             }
         }
-        steps.add(Triple(i, best.score, recentSolutionCopy!!.score))
+        steps.add(Triple(i, best.score, recentSolutionCopy.score))
         
         return best to Progress(steps)
     }
