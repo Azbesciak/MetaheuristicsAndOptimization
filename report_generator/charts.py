@@ -300,7 +300,7 @@ class CompareChart(DefaultChart):
 
                 i += 1
 
-        plt.xticks(rotation=90)
+        plt.xticks(rotation=60, ha='right')
         self.ylabel = 'Nazwa wczytanej instancji'
         
         # plt.title(self.title)

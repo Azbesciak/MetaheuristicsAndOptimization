@@ -15,6 +15,7 @@ GREEDY_ALGS = [
     'Greedy-ContinuousNBStart-HeuristicInit',
     'Greedy-ContinuousNBStart-RandomInit',
     'Greedy-RandomNBStart-RandomInit',
+    'Greedy-RandomNBStart-HeuristicInit',
     'Greedy-ZeroNBStart-HeuristicInit',
     'Greedy-ZeroNBStart-RandomInit'
     ]
@@ -23,6 +24,7 @@ STEEPEST_ALGS = [
     'Steepest-ContinuousNBStart-HeuristicInit',
     'Steepest-ContinuousNBStart-RandomInit',
     'Steepest-RandomNBStart-RandomInit',
+    'Steepest-RandomNBStart-HeuristicInit',
     'Steepest-ZeroNBStart-HeuristicInit',
     'Steepest-ZeroNBStart-RandomInit'
     ]
@@ -43,26 +45,23 @@ def generate():
                 instances[summary['name']][summary['type']] = summary
 
     # Generate global instances charts
-    try:
-        charts.generate('avg_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.AVG, GREEDY_ALGS, map_alg_name=False)
-        charts.generate('avg_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.AVG, STEEPEST_ALGS, map_alg_name=False)
-        charts.generate('efficiency_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.TIME_EFF, GREEDY_ALGS, map_alg_name=False)
-        charts.generate('efficiency_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.TIME_EFF, STEEPEST_ALGS, map_alg_name=False)
+    charts.generate('avg_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.AVG, GREEDY_ALGS, map_alg_name=False)
+    charts.generate('avg_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.AVG, STEEPEST_ALGS, map_alg_name=False)
+    charts.generate('efficiency_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.TIME_EFF, GREEDY_ALGS, map_alg_name=False)
+    charts.generate('efficiency_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.TIME_EFF, STEEPEST_ALGS, map_alg_name=False)
 
-        max_scores = charts.generate('best_cmp', "Najlepsze wyniki", instances, charts.CType.MIN, SUMMARY_ALGS_ALL)
+    max_scores = charts.generate('best_cmp', "Najlepsze wyniki", instances, charts.CType.MIN, SUMMARY_ALGS_ALL)
 
-        min_scores = charts.generate('worst_cmp',  "Najgorsze wyniki", instances, charts.CType.MAX, SUMMARY_ALGS_ALL)
+    min_scores = charts.generate('worst_cmp',  "Najgorsze wyniki", instances, charts.CType.MAX, SUMMARY_ALGS_ALL)
 
-        avg_scores = charts.generate('avg_cmp', "Średnie wyniki", instances, charts.CType.AVG, SUMMARY_ALGS_ALL)
-        
-        avg_times = charts.generate('times_cmp', "Czasy", instances, charts.CType.TIME, SUMMARY_ALGS_ALL)
+    avg_scores = charts.generate('avg_cmp', "Średnie wyniki", instances, charts.CType.AVG, SUMMARY_ALGS_ALL)
+    
+    avg_times = charts.generate('times_cmp', "Czasy", instances, charts.CType.TIME, SUMMARY_ALGS_ALL)
 
-        efiiciency = charts.generate('efficiency_cmp', "Efektywność", instances, charts.CType.TIME_EFF, alg_types=SUMMARY_ALGS_SELECTED)
+    efiiciency = charts.generate('efficiency_cmp', "Efektywność", instances, charts.CType.TIME_EFF, alg_types=SUMMARY_ALGS_ALL)
 
-        avg_steps = charts.generate('steps_cmp', "Kroki", instances, charts.CType.AVG_STEPS, alg_types=SUMMARY_ALGS_SELECTED)
+    avg_steps = charts.generate('steps_cmp', "Kroki", instances, charts.CType.AVG_STEPS, alg_types=SUMMARY_ALGS_SELECTED)
 
-    except Exception as e:
-        print("Error: Generacja nie powiodła się \n\t{}: {}".format(type(e), e))
 
     # Generate single instances charts
     for instance in instances.keys():
