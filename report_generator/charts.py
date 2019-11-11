@@ -84,6 +84,7 @@ class DefaultChart:
 \begin{figure}[H]
 \includegraphics[width=\columnwidth]{''' + self.file_path + '''}
 \caption{''' + self.title + '''}
+\label{fig:''' + self.name +'''}
 \end{figure}
 '''
         print(tex, file=self.output)
