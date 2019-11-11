@@ -9,7 +9,7 @@ import shutil
 import copy
 
 MARKERS = ['s', 'o', '*', 'p', 'x', 'D']
-OUTPUT_DIR='out'
+OUTPUT_DIR='out/generated_tex'
 
 
 class MarkerSpec:
@@ -82,7 +82,7 @@ class DefaultChart:
 
         tex = R'''
 \begin{figure}[H]
-\includegraphics[width=\columnwidth]{''' + self.file_path + '''}
+\includegraphics[width=\columnwidth]{../''' + self.file_path + '''}
 \caption{''' + self.title + '''}
 \label{fig:''' + self.name +'''}
 \end{figure}
@@ -90,6 +90,8 @@ class DefaultChart:
         print(tex, file=self.output)
 
         if self.save:
+            if not os.path.exists(OUTPUT_DIR):
+                os.makedirs(OUTPUT_DIR)
             with open(os.path.join(OUTPUT_DIR, '{}.tex').format(self.name), 'w') as fd:
                 self.output.seek(0)
                 shutil.copyfileobj(self.output, fd)
