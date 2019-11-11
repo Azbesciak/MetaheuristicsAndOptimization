@@ -208,7 +208,7 @@ class CompareChart(DefaultChart):
         if self.legend_loc_best:
             plt.legend(loc='best')
         else:
-            plt.legend(loc='best', bbox_to_anchor=(0.5, 0., 0.5, 0.5))
+            plt.legend(loc='lower right', bbox_to_anchor=(0.5, 0., 0.5, 0.5))
         
         return super().generate()
 
