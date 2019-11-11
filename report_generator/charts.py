@@ -26,13 +26,13 @@ ALG_MARKERS = {
 }
 
 
-def generate(name, title, instances, chart_type, alg_types=None, instance=None, xlabel=None, ylabel=None, map_alg_name=True):
+def generate(name, title, instances, chart_type, alg_types=None, instance=None, xlabel=None, ylabel=None, map_alg_name=True, legend_loc_best=True):
     COMPARE_TYPES = [CType.MAX, CType.MIN, CType.AVG, CType.TIME, CType.TIME_EFF, CType.AVG_STEPS]
 
     if chart_type in COMPARE_TYPES:
-        return CompareChart(name, title, instances, chart_type, alg_types, xlabel=xlabel, ylabel=ylabel, map_alg_name=map_alg_name).generate()
+        return CompareChart(name, title, instances, chart_type, alg_types, xlabel=xlabel, ylabel=ylabel, map_alg_name=map_alg_name, legend_loc_best=legend_loc_best).generate()
     else:
-        return SingleInstanceChart(name, instance, title, instances, chart_type, alg_types, xlabel=xlabel, ylabel=ylabel, map_alg_name=map_alg_name).generate()
+        return SingleInstanceChart(name, instance, title, instances, chart_type, alg_types, xlabel=xlabel, ylabel=ylabel, map_alg_name=map_alg_name, legend_loc_best=legend_loc_best).generate()
 
 
 class CType(Enum):
@@ -49,7 +49,7 @@ class CType(Enum):
 
 
 class DefaultChart:
-    def __init__(self, name, title, json_data, chart_type='default', save=True, ylabel=None, xlabel=None, map_alg_name=True):
+    def __init__(self, name, title, json_data, chart_type='default', save=True, ylabel=None, xlabel=None, map_alg_name=True, legend_loc_best=True):
         plt.clf()
 
         self.xlabel = xlabel
@@ -64,6 +64,7 @@ class DefaultChart:
         self.output = StringIO()
         self.save = save
         self.map_alg_name = map_alg_name
+        self.legend_loc_best = legend_loc_best
 
     def get_mapped_alg_name(self, name: str):
         return name.split('-')[0] if self.map_alg_name else name
@@ -96,11 +97,11 @@ class DefaultChart:
 
 
 class SingleInstanceChart(DefaultChart):
-    def __init__(self, name, instance, title, json_data, chart_type="single", alg_types=None, xlabel=None, ylabel=None, map_alg_name=True):
+    def __init__(self, name, instance, title, json_data, chart_type="single", alg_types=None, xlabel=None, ylabel=None, map_alg_name=True, legend_loc_best=True):
         self.instance = instance
         self.alg_types = alg_types
         self.map_alg_name = map_alg_name
-        super().__init__(name, title, json_data, chart_type, xlabel=xlabel, ylabel=ylabel, map_alg_name=map_alg_name)
+        super().__init__(name, title, json_data, chart_type, xlabel=xlabel, ylabel=ylabel, map_alg_name=map_alg_name, legend_loc_best=legend_loc_best)
         self.file_path = '{}/{}{}.png'.format(self.dir_path, self.instance, self.name)
 
     def __plot_begend(self):
@@ -189,19 +190,23 @@ bar_width = 0.1
 
 
 class CompareChart(DefaultChart):
-    def __init__(self, name, title, json_data, ctype, alg_types=None, opacity=0.7, ylabel=None, xlabel=None, map_alg_name=True):
+    def __init__(self, name, title, json_data, ctype, alg_types=None, opacity=0.7, ylabel=None, xlabel=None, map_alg_name=True, legend_loc_best=True):
         self.ctype = ctype
         self.alg_types = alg_types
         self.opacity = opacity
         self.marker = MarkerSpec(None, None)
         self.map_alg_name = map_alg_name
-        super().__init__(name, title, json_data, ctype, xlabel=xlabel, ylabel=ylabel, map_alg_name=map_alg_name)
+        super().__init__(name, title, json_data, ctype, xlabel=xlabel, ylabel=ylabel, map_alg_name=map_alg_name, legend_loc_best=legend_loc_best)
         self.file_path = '{}/{}{}.png'.format(self.dir_path, 'compare', self.name)
 
     def generate(self):
         plt.xlabel(self.ylabel)
         plt.ylabel(self.xlabel)
-        plt.legend(loc='best')
+        if self.legend_loc_best:
+            plt.legend(loc='best')
+        else:
+            plt.legend(loc='best', bbox_to_anchor=(0.5, 0., 0.5, 0.5))
+        
         return super().generate()
 
     def __get_best_times(self):

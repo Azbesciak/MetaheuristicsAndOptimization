@@ -44,9 +44,9 @@ def generate():
 
     # Generate global instances charts
     try:
-        charts.generate('avg_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.AVG, GREEDY_ALGS, map_alg_name=False)
+        charts.generate('avg_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.AVG, GREEDY_ALGS, map_alg_name=False, legend_loc_best=False)
 
-        charts.generate('avg_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.AVG, STEEPEST_ALGS, map_alg_name=False)
+        charts.generate('avg_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.AVG, STEEPEST_ALGS, map_alg_name=False, legend_loc_best=False)
 
         max_scores = charts.generate('best_cmp', "Najlepsze wyniki", instances, charts.CType.MIN, SUMMARY_ALGS_ALL)
 
@@ -74,7 +74,7 @@ def generate():
         xlabel='Liczba restartów', ylabel='Najlepsze rozwiązanie')
 
         charts.generate("{}_begend".format(instance), "Początkowe/Końcowe", instances, charts.CType.BEG_END, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
-        xlabel='Początkowe rozwiązanie', ylabel='Końcowe rozwiązanie')
+        ylabel='Początkowe rozwiązanie', xlabel='Końcowe rozwiązanie')
 
         charts.generate("{}_similaritygi".format(instance), "Podobieństwo", instances, charts.CType.SIMILARITY, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
         xlabel='Jakość', ylabel='Podobieństwo')
