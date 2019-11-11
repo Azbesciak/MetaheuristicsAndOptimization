@@ -35,10 +35,10 @@ object Solver {
                 best = recentSolution
             }
             if (i++%progressDumpInterval == 0){
-                steps.add(Triple(i, best.score, recentSolutionCopy.score))
+                steps += Triple(i, best.score, recentSolutionCopy.score)
             }
         }
-        steps.add(Triple(i, best.score, recentSolutionCopy.score))
+        steps += Triple(i, best.score, recentSolutionCopy.score)
         
         return best to Progress(steps)
     }
