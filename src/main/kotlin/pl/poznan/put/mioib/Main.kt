@@ -6,6 +6,8 @@ import pl.poznan.put.mioib.algorithm.mutators.ls.*
 import pl.poznan.put.mioib.algorithm.mutators.nearestneighbor.NearestNeighborMutator
 import pl.poznan.put.mioib.algorithm.mutators.random.RandomMutator
 import pl.poznan.put.mioib.algorithm.mutators.sa.SimulatedAnnealingMutator
+import pl.poznan.put.mioib.algorithm.mutators.ts.RankerNeighbourhoodBrowser
+import pl.poznan.put.mioib.algorithm.mutators.ts.TabuSearchMutator
 import pl.poznan.put.mioib.algorithm.stopcondition.DisabledStopCondition
 import pl.poznan.put.mioib.algorithm.stopcondition.IterationsCountStopCondition
 import pl.poznan.put.mioib.algorithm.stopcondition.NotImprovingSolutionStopCondition
@@ -25,6 +27,7 @@ import pl.poznan.put.mioib.report.Attempt
 import pl.poznan.put.mioib.report.Score
 import pl.poznan.put.mioib.report.Summary
 import pl.poznan.put.mioib.solver.Solver
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 typealias Executor = Pair<String, (r: Random) -> Pair<SolutionMutator, StopCondition>>
@@ -40,6 +43,7 @@ fun main(args: Array<String>) = ProgramExecutor {
     instances.forEach {
         val lsBrowser = GreedyNeighbourhoodBrowser(0.0, { 0 }, LOWER_SOLUTION_VALUE)
         val stBrowser = SteepestNeighbourhoodBrowser(0.0, { 0 }, LOWER_SOLUTION_VALUE)
+        val rankerBrowser = RankerNeighbourhoodBrowser((it.instance.size * tabuUpdates).roundToInt(), LOWER_SOLUTION_VALUE, { 0 })
         val instance = it.instance
         val weightMatrix = SymmetricWeightMatrix(instance, Euclides2DWeightCalculator)
         val evaluator = SymmetricSolutionEvaluator(weightMatrix)
@@ -66,7 +70,8 @@ fun main(args: Array<String>) = ProgramExecutor {
                 "Steepest-ZeroNBStart-HeuristicInit" to { r -> steepestLsH(stBrowser, weightMatrix, r, isBetter) },
                 "Steepest-ContinuousNBStart-RandomInit" to { r -> steepestLs(statefulSteepest(), r, isBetter) },
                 "Steepest-ContinuousNBStart-HeuristicInit" to { r -> steepestLsH(statefulSteepest(), weightMatrix, r, isBetter) },
-                "Simulated Annealing" to { r -> simulatedAnnealing(r, weightMatrix) }
+                "Simulated Annealing" to { r -> simulatedAnnealing(r, weightMatrix) },
+                "Tabu Search" to { r -> tabuSearch(instance.size, rankerBrowser, r, isBetter)}
         ).forEach { (mutatorName, mutatorFactory) ->
             val random = Random(randomSeed)
             val collectedResults = mutableListOf<Pair<SolutionProposal, Progress>>()
@@ -80,6 +85,9 @@ fun main(args: Array<String>) = ProgramExecutor {
         }          
     }
 }.main(args)
+
+fun Params.tabuSearch(instanceSize: Int, browser: NeighbourhoodBrowser, r: Random, better: SolutionComparator) =
+        TabuSearchMutator(browser, instanceSize, (tabuRatio * instanceSize).roundToInt(), LOWER_SOLUTION_VALUE) prependWithRandom r to notImprovingSC(better, notImprovingSolutions)
 
 private fun statefulGreedy() = stateful { GreedyNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }
 private fun statefulSteepest() = stateful { SteepestNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }

@@ -1,7 +1,7 @@
 package pl.poznan.put.mioib
 
-import com.nhaarman.mockito_kotlin.doReturn
-import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.*
+import pl.poznan.put.mioib.algorithm.weight.SolutionEvaluator
 import pl.poznan.put.mioib.algorithm.weight.WeightMatrix
 import pl.poznan.put.mioib.model.Weighting
 
@@ -19,6 +19,14 @@ fun makeSymmetricMockWeightMatrix(vararg entries: MatEntry) = mock<WeightMatrix>
         on { get(to, from) } doReturn value
     }
     entries.forEach { makePair(it.l1, it.l2, it.weight.toDouble()) }
+}
+
+fun mockEvaluator(vararg items: MatEntry) = mock<SolutionEvaluator> {
+    on { delta(any(), any(), any()) } doAnswer {
+        val from = it.getArgument<Int>(0)
+        val to = it.getArgument<Int>(1)
+        (items.firstOrNull { it.l1 == from && it.l2 == to }?.weight ?: 0).toDouble()
+    }
 }
 
 const val TEST_INSTANCES_ROOT = "./src/test/resources/instances"
