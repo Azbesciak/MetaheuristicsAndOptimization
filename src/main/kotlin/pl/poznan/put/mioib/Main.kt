@@ -56,7 +56,7 @@ fun main(args: Array<String>) = ProgramExecutor {
         RandomInit - Algorithm is initialized with random solution
          **/
         arrayOf<Executor>(
-                "Random" to { r -> randomMut(r, instance) },
+//                "Random" to { r -> randomMut(r, instance) },
                 "Heuristic" to { r -> heuristic(weightMatrix, r) },
                 "Greedy-ZeroNBStart-RandomInit" to { r -> greedyLs(lsBrowser, r, isBetter) },
                 "Greedy-RandomNBStart-RandomInit" to { r -> greedyLs(greedyNB(r), r, isBetter) },
@@ -70,8 +70,10 @@ fun main(args: Array<String>) = ProgramExecutor {
                 "Steepest-ZeroNBStart-HeuristicInit" to { r -> steepestLsH(stBrowser, weightMatrix, r, isBetter) },
                 "Steepest-ContinuousNBStart-RandomInit" to { r -> steepestLs(statefulSteepest(), r, isBetter) },
                 "Steepest-ContinuousNBStart-HeuristicInit" to { r -> steepestLsH(statefulSteepest(), weightMatrix, r, isBetter) },
-                "Simulated Annealing" to { r -> simulatedAnnealing(r, weightMatrix) },
-                "Tabu Search" to { r -> tabuSearch(instance.size, rankerBrowser, r, isBetter)}
+                "SimulatedAnnealing-RandomInit" to { r -> simulatedAnnealing(r, weightMatrix, r.mut()) },
+                "SimulatedAnnealing-HeuristicInit" to { r -> simulatedAnnealing(r, weightMatrix, nearest(weightMatrix, r)) },
+                "TabuSearch-RandomInit" to { r -> tabuSearch(instance.size, rankerBrowser, r, isBetter, r.mut())},
+                "TabuSearch-HeuristicInit" to { r -> tabuSearch(instance.size, rankerBrowser, r, isBetter, nearest(weightMatrix, r))}
         ).forEach { (mutatorName, mutatorFactory) ->
             val random = Random(randomSeed)
             val collectedResults = mutableListOf<Pair<SolutionProposal, Progress>>()
@@ -86,8 +88,8 @@ fun main(args: Array<String>) = ProgramExecutor {
     }
 }.main(args)
 
-fun Params.tabuSearch(instanceSize: Int, browser: NeighbourhoodBrowser, r: Random, better: SolutionComparator) =
-        TabuSearchMutator(browser, instanceSize, (tabuRatio * instanceSize).roundToInt(), LOWER_SOLUTION_VALUE) prependWithRandom r to notImprovingSC(better, notImprovingSolutions)
+fun Params.tabuSearch(instanceSize: Int, browser: NeighbourhoodBrowser, r: Random, better: SolutionComparator, initial: SolutionMutator) =
+        TabuSearchMutator(browser, instanceSize, (tabuRatio * instanceSize).roundToInt(), LOWER_SOLUTION_VALUE) prependWith initial to notImprovingSC(better, notImprovingSolutions)
 
 private fun statefulGreedy() = stateful { GreedyNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }
 private fun statefulSteepest() = stateful { SteepestNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }
@@ -98,8 +100,8 @@ private inline fun stateful(f: ((Int) -> Int) -> NeighbourhoodBrowser): Stateful
     return browser
 }
 
-private fun simulatedAnnealing(random: Random, weightMatrix: SymmetricWeightMatrix) =
-        SimulatedAnnealingMutator(RandomNeighbourhoodBrowser(random), random, LOWER_SOLUTION_VALUE) prependWith nearest(weightMatrix, random) to endlessSolutions()
+private fun simulatedAnnealing(random: Random, weightMatrix: SymmetricWeightMatrix, initial: SolutionMutator) =
+        SimulatedAnnealingMutator(RandomNeighbourhoodBrowser(random), random, LOWER_SOLUTION_VALUE) prependWith initial to endlessSolutions()
 
 private fun randomMut(random: Random, instance: Instance) =
         RandomMutator(random, instance.size * instance.size / 3) to endlessSolutions()
@@ -133,7 +135,9 @@ private fun nearest(weightMatrix: SymmetricWeightMatrix, random: Random) =
 
 private infix fun SolutionMutator.prependWith(mutator: SolutionMutator) = MergedMutator(mutator, this)
 
-private infix fun SolutionMutator.prependWithRandom(random: Random) = prependWith(RandomMutator(random, 1))
+private infix fun SolutionMutator.prependWithRandom(random: Random) = prependWith(random.mut())
+
+private fun Random.mut() = RandomMutator(this, 1)
 
 private val StopCondition.skipFirstCheck
     get() = DisabledStopCondition(1, this)
