@@ -45,38 +45,66 @@ def generate():
                 instances[summary['name']][summary['type']] = summary
 
     # Generate global instances charts
-    charts.generate('avg_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.AVG, GREEDY_ALGS, map_alg_name=False)
-    charts.generate('avg_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.AVG, STEEPEST_ALGS, map_alg_name=False)
-    charts.generate('efficiency_cmp_greedy', "Wpływ rodzaju startu dla \"Greedy\"", instances, charts.CType.TIME_EFF, GREEDY_ALGS, map_alg_name=False)
-    charts.generate('efficiency_cmp_steepest', "Wpływ rodzaju startu dla \"Steepest\"", instances, charts.CType.TIME_EFF, STEEPEST_ALGS, map_alg_name=False)
+    charts.generate('avg_cmp_greedy', 
+"Wpływ przyjętej strategi przeglądania oraz początkowego rozwiązania na \\textbf{{jakość}} rozwiązania końcowego dla heurystyki \\textit{{Local Search}} typu \\textbf{{\\textit{{Greedy}}}}", 
+instances, charts.CType.AVG, GREEDY_ALGS, map_alg_name=False)
+    charts.generate('avg_cmp_steepest',
+"Wpływ przyjętej strategi przeglądania oraz początkowego rozwiązania na \\textbf{{jakość}} rozwiązania końcowego dla heurystyki \\textit{{Local Search}} typu \\textbf{{\\textit{{Steepest}}}}",
+instances, charts.CType.AVG, STEEPEST_ALGS, map_alg_name=False)
+    charts.generate('efficiency_cmp_greedy', 
+"Wpływ przyjętej strategi przeglądania oraz początkowego rozwiązania na \\textbf{{efektywność}} rozwiązania końcowego dla heurystyki \\textit{{Local Search}} typu \\textbf{{\\textit{{Greedy}}}}", 
+instances, charts.CType.TIME_EFF, GREEDY_ALGS, map_alg_name=False)
+    charts.generate('efficiency_cmp_steepest',
+"Wpływ przyjętej strategi przeglądania oraz początkowego rozwiązania na \\textbf{{efektywność}} rozwiązania końcowego dla heurystyki \\textit{{Local Search}} typu \\textbf{{\\textit{{Steepest}}}}", 
+instances, charts.CType.TIME_EFF, STEEPEST_ALGS, map_alg_name=False)
 
-    max_scores = charts.generate('best_cmp', "Najlepsze wyniki", instances, charts.CType.MIN, SUMMARY_ALGS_ALL)
+    max_scores = charts.generate('best_cmp', 
+"Porównanie badanych algorytmów pod względem miary jakości (wzór \\ref{{eq:quality}}) dla \\textbf{{najlepszego}} ostatecznie uzyskanego wyniku", 
+instances, charts.CType.MIN, SUMMARY_ALGS_ALL)
 
-    min_scores = charts.generate('worst_cmp',  "Najgorsze wyniki", instances, charts.CType.MAX, SUMMARY_ALGS_ALL)
+    min_scores = charts.generate('worst_cmp',  
+"Porównanie badanych algorytmów pod względem miary jakości (wzór \\ref{{eq:quality}}) dla \\textbf{{najgorszego}} ostatecznie uzyskanego wyniku", 
+instances, charts.CType.MAX, SUMMARY_ALGS_ALL)
 
-    avg_scores = charts.generate('avg_cmp', "Średnie wyniki", instances, charts.CType.AVG, SUMMARY_ALGS_ALL)
+    avg_scores = charts.generate('avg_cmp', 
+"Porównanie badanych algorytmów pod względem miary jakości (wzór \\ref{{eq:quality}}) dla \\textbf{{średniej}} z ostatecznie uzyskanych wyników", 
+instances, charts.CType.AVG, SUMMARY_ALGS_ALL)
     
-    avg_times = charts.generate('times_cmp', "Czasy", instances, charts.CType.TIME, SUMMARY_ALGS_ALL)
+    avg_times = charts.generate('times_cmp', 
+"Uśredniony czas przetwarzania badanych algorytmów do momentu spełnienia indywidualnych warunków stopu dla próbki co najmniej 10 uruchomień oraz minimalnego trwania poszczególnej serii wynoszącego 1 sekundę", 
+instances, charts.CType.TIME, SUMMARY_ALGS_ALL)
 
-    efiiciency = charts.generate('efficiency_cmp', "Efektywność", instances, charts.CType.TIME_EFF, alg_types=SUMMARY_ALGS_ALL)
+    efiiciency = charts.generate('efficiency_cmp', 
+'{{Porównanie efektywności algorytmów dla wszystkich instancji}}',
+instances, charts.CType.TIME_EFF, alg_types=SUMMARY_ALGS_ALL)
 
-    avg_steps = charts.generate('steps_cmp', "Kroki", instances, charts.CType.AVG_STEPS, alg_types=SUMMARY_ALGS_SELECTED)
+    avg_steps = charts.generate('steps_cmp', 
+"Porównanie średniej liczby kroków algorytmów \\textit{{Greedy}} i \\textit{{Steepest}} dla wszystkich instancji", 
+instances, charts.CType.AVG_STEPS, alg_types=SUMMARY_ALGS_SELECTED)
 
 
     # Generate single instances charts
     for instance in instances.keys():
         print(instance)
 
-        charts.generate("{}_progress_avg".format(instance), "Postępy AVG", instances, charts.CType.PROGRESS_AVG, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
+        charts.generate("{}_progress_avg".format(instance), 
+"Wpływ liczby restartów w konfiguracji \\textit{{multi-random start}} na \\textbf{{średnie}} znalezione rozwiązanie dla algorytmów \\textit{{Greedy}} i \\textit{{Steepest}} oraz instancji \\textbf{{{}}}".format(instance), 
+instances, charts.CType.PROGRESS_AVG, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
         xlabel='Liczba restartów', ylabel='Średnie rozwiązanie')
 
-        charts.generate("{}_progress_best".format(instance), "Postępy BEST", instances, charts.CType.PROGRESS_BEST, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
+        charts.generate("{}_progress_best".format(instance), 
+"Wpływ liczby restartów w konfiguracji \\textit{{multi-random start}} na \\textbf{{najlepsze}} znalezione rozwiązanie dla algorytmów \\textit{{Greedy}} i \\textit{{Steepest}} oraz instancji \\textbf{{{}}}".format(instance), 
+instances, charts.CType.PROGRESS_BEST, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
         xlabel='Liczba restartów', ylabel='Najlepsze rozwiązanie')
 
-        charts.generate("{}_begend".format(instance), "Początkowe/Końcowe", instances, charts.CType.BEG_END, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
+        charts.generate("{}_begend".format(instance), 
+"Jakość rozwiązania początkowego i końcowego dla instancji \\textbf{{{}}}".format(instance),
+ instances, charts.CType.BEG_END, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
         ylabel='Początkowe rozwiązanie', xlabel='Końcowe rozwiązanie')
 
-        charts.generate("{}_similaritygi".format(instance), "Podobieństwo", instances, charts.CType.SIMILARITY, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
+        charts.generate("{}_similaritygi".format(instance), 
+"Wpływ jakości na podobieństwo znajdowanych rozwiązań dla instancji \\textbf{{{}}}".format(instance), 
+instances, charts.CType.SIMILARITY, alg_types=RANDOM_ALGS_SELECTED, instance=instance,
         xlabel='Jakość', ylabel='Podobieństwo')
 
 
