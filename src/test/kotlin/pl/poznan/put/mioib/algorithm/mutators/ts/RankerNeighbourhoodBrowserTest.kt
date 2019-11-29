@@ -11,7 +11,7 @@ internal class RankerNeighbourhoodBrowserTest {
     @Test
     fun browse() {
         val resultMaxSize = 3
-        val browser = RankerNeighbourhoodBrowser(resultMaxSize, { a, b -> b > a }, { 0 })
+        val browser = RankerNeighbourhoodBrowser(resultMaxSize, { a, b -> b > a }) { 0 }
         val items = arrayOf(
                 0 to 1 weight 4,
                 0 to 2 weight 3,

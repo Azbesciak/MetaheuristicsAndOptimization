@@ -9,6 +9,7 @@ import pl.poznan.put.mioib.model.DeltaUpdate
 class RankerNeighbourhoodBrowser(
         private val resultMaxSize: Int,
         private val isBetter: SolutionValueComparator,
+        private val eliminateCollision: Boolean = true,
         private val seed: (Int) -> Int
 ) : NeighbourhoodBrowser {
     private val lastIndex = resultMaxSize - 1
@@ -41,8 +42,9 @@ class RankerNeighbourhoodBrowser(
     }
 
     private inline infix fun DeltaUpdate.collidesWith(previous: DeltaUpdate) =
-            from == previous.from || from == previous.to ||
-                    to == previous.from || to == previous.to
+            eliminateCollision && (
+                    from == previous.from || from == previous.to || to == previous.from || to == previous.to
+                    )
 
     private inline fun shouldReplace(delta: DeltaUpdate?, value: Double, onFail: () -> Unit = {}, onReplace: () -> Unit) {
         if (delta == null || isBetter(delta.scoreDelta, value)) {

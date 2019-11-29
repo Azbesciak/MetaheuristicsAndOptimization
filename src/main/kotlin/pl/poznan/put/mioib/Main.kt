@@ -43,7 +43,8 @@ fun main(args: Array<String>) = ProgramExecutor {
     instances.forEach {
         val lsBrowser = GreedyNeighbourhoodBrowser(0.0, { 0 }, LOWER_SOLUTION_VALUE)
         val stBrowser = SteepestNeighbourhoodBrowser(0.0, { 0 }, LOWER_SOLUTION_VALUE)
-        val rankerBrowser = RankerNeighbourhoodBrowser((it.instance.size * tabuUpdates).roundToInt(), LOWER_SOLUTION_VALUE, { 0 })
+        val rankerBrowser = RankerNeighbourhoodBrowser((it.instance.size * tabuUpdates).roundToInt(), LOWER_SOLUTION_VALUE, false) { 0 }
+        val rankerBrowserNoCollisions = RankerNeighbourhoodBrowser((it.instance.size * tabuUpdates).roundToInt(), LOWER_SOLUTION_VALUE, true) { 0 }
         val instance = it.instance
         val weightMatrix = SymmetricWeightMatrix(instance, Euclides2DWeightCalculator)
         val evaluator = SymmetricSolutionEvaluator(weightMatrix)
@@ -70,10 +71,13 @@ fun main(args: Array<String>) = ProgramExecutor {
 //                "Steepest-ZeroNBStart-HeuristicInit" to { r -> steepestLsH(stBrowser, weightMatrix, r, isBetter) },
 //                "Steepest-ContinuousNBStart-RandomInit" to { r -> steepestLs(statefulSteepest(), r, isBetter) },
 //                "Steepest-ContinuousNBStart-HeuristicInit" to { r -> steepestLsH(statefulSteepest(), weightMatrix, r, isBetter) },
-                "SimulatedAnnealing-RandomInit" to { r -> simulatedAnnealing(r, isBetter, r.mut(), instance.size) },
-                "SimulatedAnnealing-HeuristicInit" to { r -> simulatedAnnealing(r,  isBetter, nearest(weightMatrix, r), instance.size) }
-//                "TabuSearch-RandomInit" to { r -> tabuSearch(instance.size, rankerBrowser, isBetter, r.mut())},
-//                "TabuSearch-HeuristicInit" to { r -> tabuSearch(instance.size, rankerBrowser, isBetter, nearest(weightMatrix, r))}
+//                "SimulatedAnnealing-RandomInit" to { r -> simulatedAnnealing(r, isBetter, r.mut(), instance.size) },
+//                "SimulatedAnnealing-HeuristicInit" to { r -> simulatedAnnealing(r,  isBetter, nearest(weightMatrix, r), instance.size) },
+                "TabuSearch-RandomInit" to { r -> tabuSearch(instance.size, rankerBrowser, isBetter, r.mut(), false)},
+                "TabuSearch-HeuristicInit" to { r -> tabuSearch(instance.size, rankerBrowser, isBetter, nearest(weightMatrix, r), false)},
+                "TabuSearch-HeuristicInit-BreakTabu" to { r -> tabuSearch(instance.size, rankerBrowser, isBetter, nearest(weightMatrix, r), true)},
+                "TabuSearch-HeuristicInit-NoCollisions" to { r -> tabuSearch(instance.size, rankerBrowserNoCollisions, isBetter, nearest(weightMatrix, r), false)},
+                "TabuSearch-HeuristicInit-NoCollisions_BreakTabu" to { r -> tabuSearch(instance.size, rankerBrowserNoCollisions, isBetter, nearest(weightMatrix, r), true)}
         ).forEach { (mutatorName, mutatorFactory) ->
             val random = Random(randomSeed)
             val collectedResults = mutableListOf<Pair<SolutionProposal, Progress>>()
@@ -88,8 +92,11 @@ fun main(args: Array<String>) = ProgramExecutor {
     }
 }.main(args)
 
-fun Params.tabuSearch(instanceSize: Int, browser: NeighbourhoodBrowser, better: SolutionComparator, initial: SolutionMutator) =
-        TabuSearchMutator(browser, instanceSize, tabuRatio inInstanceSize instanceSize, LOWER_SOLUTION_VALUE, Double.POSITIVE_INFINITY) prependWith initial to
+fun Params.tabuSearch(instanceSize: Int, browser: NeighbourhoodBrowser, better: SolutionComparator, initial: SolutionMutator, breakTabu: Boolean) =
+        TabuSearchMutator(browser, instanceSize,
+                tabuRatio inInstanceSize instanceSize,
+                LOWER_SOLUTION_VALUE, Double.POSITIVE_INFINITY, breakTabu
+        ) prependWith initial to
                 notImprovingSC(better, notImprovingSolutionsRatio inInstanceSize instanceSize)
 
 private fun statefulGreedy() = stateful { GreedyNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }

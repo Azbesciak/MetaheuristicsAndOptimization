@@ -12,7 +12,8 @@ class TabuSearchMutator(
         instanceSize: Int,
         private val tabuSize: Int,
         private val isBetter: SolutionValueComparator,
-        worstPossibleValue: Double
+        worstPossibleValue: Double,
+        private val breakTabuIfBetterThanTheBest: Boolean = true
 ) : SolutionMutator {
     private val tabuList = IntMatrix(instanceSize)
     private var iteration = 0
@@ -53,7 +54,7 @@ class TabuSearchMutator(
         // all are > 0 because we query tabu
     private inline fun forceTabuReevaluate(evaluator: SolutionEvaluator, solution: SolutionProposal): DeltaUpdate {
             val updates = currentUpdates()
-            if (neibourhoodPointer == 0) {
+            if (breakTabuIfBetterThanTheBest && neibourhoodPointer == 0) {
                 val bestUpdate = updates.minBy { it.scoreDelta }!!
                 if (isBetter(bestValueSoFar, bestUpdate.scoreDelta + solution.score)) {
                     neibourhoodPointer = Int.MAX_VALUE
