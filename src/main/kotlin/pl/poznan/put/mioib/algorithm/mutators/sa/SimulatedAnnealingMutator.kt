@@ -9,6 +9,7 @@ import pl.poznan.put.mioib.model.SolutionProposal
 import kotlin.math.exp
 import kotlin.math.ln
 import kotlin.math.max
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 // https://www.baeldung.com/java-simulated-annealing-for-traveling-salesman
@@ -48,9 +49,9 @@ class SimulatedAnnealingMutator(
         if (!::cooling.isInitialized)
             cooling = CoolingState(
                     initializeTemperature(solution, solutionEvaluator),
-                    0.999,
-                    max(solution.sequence.size * solution.sequence.size, 1000),
-                    2.0
+                    0.9997,
+                    max(solution.sequence.size * solution.sequence.size * 2, 1000),
+                    3.0
             )
         cooling.update()
     }
