@@ -89,7 +89,7 @@ fun main(args: Array<String>) = ProgramExecutor {
 }.main(args)
 
 fun Params.tabuSearch(instanceSize: Int, browser: NeighbourhoodBrowser, better: SolutionComparator, initial: SolutionMutator) =
-        TabuSearchMutator(browser, instanceSize, (tabuRatio * instanceSize).roundToInt(), LOWER_SOLUTION_VALUE) prependWith initial to
+        TabuSearchMutator(browser, instanceSize, (tabuRatio * instanceSize).roundToInt(), LOWER_SOLUTION_VALUE, Double.POSITIVE_INFINITY) prependWith initial to
                 notImprovingSC(better, notImprovingSolutionsRatio inInstanceSize instanceSize)
 
 private fun statefulGreedy() = stateful { GreedyNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }

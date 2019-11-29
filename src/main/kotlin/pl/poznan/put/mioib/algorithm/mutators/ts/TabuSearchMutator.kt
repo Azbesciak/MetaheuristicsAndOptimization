@@ -11,12 +11,14 @@ class TabuSearchMutator(
         private val browser: NeighbourhoodBrowser,
         instanceSize: Int,
         private val tabuSize: Int,
-        private val isBetter: SolutionValueComparator
+        private val isBetter: SolutionValueComparator,
+        worstPossibleValue: Double
 ) : SolutionMutator {
     private val tabuList = IntMatrix(instanceSize)
     private var iteration = 0
     private var neibourhoodPointer = 0
     private var currentNeighbourhood = emptyList<DeltaUpdate>()
+    private var bestValueSoFar = worstPossibleValue
     private var worseUpdate = 0.0
     override fun mutate(solution: SolutionProposal, solutionEvaluator: SolutionEvaluator): SolutionProposal {
         if (neibourhoodPointer > currentNeighbourhood.lastIndex) {
@@ -29,7 +31,10 @@ class TabuSearchMutator(
             neibourhoodPointer = Int.MAX_VALUE
         }
         tabuList[update.from, update.to] = ++iteration
-        return solution updatedWith update
+        val solutionProposal = solution updatedWith update
+        if (isBetter(bestValueSoFar, solutionProposal.score))
+            bestValueSoFar = solutionProposal.score
+        return solutionProposal
     }
 
     private inline fun findUpdate(solutionEvaluator: SolutionEvaluator, solution: SolutionProposal): DeltaUpdate? {
@@ -46,13 +51,22 @@ class TabuSearchMutator(
     }
 
         // all are > 0 because we query tabu
-    private inline fun forceTabuReevaluate(evaluator: SolutionEvaluator, solution: SolutionProposal) =
-                currentUpdates()
-                        .minBy { it.lastQuery() }!!
-                        .reevaluateIfNeeded(neibourhoodPointer, evaluator, solution).also {
-                            // tabu, game over
-                            neibourhoodPointer = Int.MAX_VALUE
-                        }
+    private inline fun forceTabuReevaluate(evaluator: SolutionEvaluator, solution: SolutionProposal): DeltaUpdate {
+            val updates = currentUpdates()
+            if (neibourhoodPointer == 0) {
+                val bestUpdate = updates.minBy { it.scoreDelta }!!
+                if (isBetter(bestValueSoFar, bestUpdate.scoreDelta + solution.score)) {
+                    neibourhoodPointer = Int.MAX_VALUE
+                    return bestUpdate
+                }
+            }
+            return updates
+                    .minBy { it.lastQuery() }!!
+                    .reevaluateIfNeeded(neibourhoodPointer, evaluator, solution).also {
+                        // tabu, game over
+                        neibourhoodPointer = Int.MAX_VALUE
+                    }
+    }
 
     private inline fun currentUpdates() =
             if (neibourhoodPointer == 0) currentNeighbourhood else currentNeighbourhood.drop(neibourhoodPointer)
