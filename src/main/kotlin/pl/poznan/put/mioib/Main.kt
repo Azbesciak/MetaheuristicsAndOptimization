@@ -57,23 +57,23 @@ fun main(args: Array<String>) = ProgramExecutor {
          **/
         arrayOf<Executor>(
 //                "Random" to { r -> randomMut(r, instance) },
-                "Heuristic" to { r -> heuristic(weightMatrix, r) },
-                "Greedy-ZeroNBStart-RandomInit" to { r -> greedyLs(lsBrowser, r, isBetter) },
-                "Greedy-RandomNBStart-RandomInit" to { r -> greedyLs(greedyNB(r), r, isBetter) },
-                "Greedy-RandomNBStart-HeuristicInit" to { r -> greedyLsH(greedyNB(r), weightMatrix, r, isBetter) },
-                "Greedy-ZeroNBStart-HeuristicInit" to { r -> greedyLsH(lsBrowser, weightMatrix, r, isBetter) },
-                "Greedy-ContinuousNBStart-RandomInit" to { r -> greedyLs(statefulGreedy(), r, isBetter) },
-                "Greedy-ContinuousNBStart-HeuristicInit" to { r -> greedyLsH(statefulGreedy(), weightMatrix, r, isBetter) },
-                "Steepest-ZeroNBStart-RandomInit" to { r -> steepestLs(stBrowser, r, isBetter) },
-                "Steepest-RandomNBStart-RandomInit" to { r -> steepestLs(steepestNB(r), r, isBetter) },
-                "Steepest-RandomNBStart-HeuristicInit" to { r -> steepestLsH(steepestNB(r), weightMatrix, r, isBetter) },
-                "Steepest-ZeroNBStart-HeuristicInit" to { r -> steepestLsH(stBrowser, weightMatrix, r, isBetter) },
-                "Steepest-ContinuousNBStart-RandomInit" to { r -> steepestLs(statefulSteepest(), r, isBetter) },
-                "Steepest-ContinuousNBStart-HeuristicInit" to { r -> steepestLsH(statefulSteepest(), weightMatrix, r, isBetter) },
+//                "Heuristic" to { r -> heuristic(weightMatrix, r) },
+//                "Greedy-ZeroNBStart-RandomInit" to { r -> greedyLs(lsBrowser, r, isBetter) },
+//                "Greedy-RandomNBStart-RandomInit" to { r -> greedyLs(greedyNB(r), r, isBetter) },
+//                "Greedy-RandomNBStart-HeuristicInit" to { r -> greedyLsH(greedyNB(r), weightMatrix, r, isBetter) },
+//                "Greedy-ZeroNBStart-HeuristicInit" to { r -> greedyLsH(lsBrowser, weightMatrix, r, isBetter) },
+//                "Greedy-ContinuousNBStart-RandomInit" to { r -> greedyLs(statefulGreedy(), r, isBetter) },
+//                "Greedy-ContinuousNBStart-HeuristicInit" to { r -> greedyLsH(statefulGreedy(), weightMatrix, r, isBetter) },
+//                "Steepest-ZeroNBStart-RandomInit" to { r -> steepestLs(stBrowser, r, isBetter) },
+//                "Steepest-RandomNBStart-RandomInit" to { r -> steepestLs(steepestNB(r), r, isBetter) },
+//                "Steepest-RandomNBStart-HeuristicInit" to { r -> steepestLsH(steepestNB(r), weightMatrix, r, isBetter) },
+//                "Steepest-ZeroNBStart-HeuristicInit" to { r -> steepestLsH(stBrowser, weightMatrix, r, isBetter) },
+//                "Steepest-ContinuousNBStart-RandomInit" to { r -> steepestLs(statefulSteepest(), r, isBetter) },
+//                "Steepest-ContinuousNBStart-HeuristicInit" to { r -> steepestLsH(statefulSteepest(), weightMatrix, r, isBetter) },
                 "SimulatedAnnealing-RandomInit" to { r -> simulatedAnnealing(r, weightMatrix, r.mut()) },
-                "SimulatedAnnealing-HeuristicInit" to { r -> simulatedAnnealing(r, weightMatrix, nearest(weightMatrix, r)) },
-                "TabuSearch-RandomInit" to { r -> tabuSearch(instance.size, rankerBrowser, r, isBetter, r.mut())},
-                "TabuSearch-HeuristicInit" to { r -> tabuSearch(instance.size, rankerBrowser, r, isBetter, nearest(weightMatrix, r))}
+                "SimulatedAnnealing-HeuristicInit" to { r -> simulatedAnnealing(r, weightMatrix, nearest(weightMatrix, r)) }
+//                "TabuSearch-RandomInit" to { r -> tabuSearch(instance.size, rankerBrowser, r, isBetter, r.mut())},
+//                "TabuSearch-HeuristicInit" to { r -> tabuSearch(instance.size, rankerBrowser, r, isBetter, nearest(weightMatrix, r))}
         ).forEach { (mutatorName, mutatorFactory) ->
             val random = Random(randomSeed)
             val collectedResults = mutableListOf<Pair<SolutionProposal, Progress>>()

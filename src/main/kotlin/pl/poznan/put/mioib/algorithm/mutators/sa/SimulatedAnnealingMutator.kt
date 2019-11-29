@@ -7,6 +7,7 @@ import pl.poznan.put.mioib.algorithm.weight.SolutionValueComparator
 import pl.poznan.put.mioib.model.DeltaUpdate
 import pl.poznan.put.mioib.model.SolutionProposal
 import kotlin.math.exp
+import kotlin.math.ln
 import kotlin.math.max
 import kotlin.random.Random
 
@@ -20,8 +21,21 @@ class SimulatedAnnealingMutator(
         private val isBetter: SolutionValueComparator
 ) : SolutionMutator {
     private lateinit var cooling: CoolingState
+
+     // http://www.cs.put.poznan.pl/mkomosinski/lectures/optimization/SA.pdf?fbclid=IwAR3FWX0jjFsJogqjbgmAIYyJdsiTqeQnXNkD3euWkFIu05DK0bc55WCAO3Y"
+    private fun initializeTemperature(solution: SolutionProposal, solutionEvaluator: SolutionEvaluator): Double {
+        val deltaList = mutableListOf<Double>()
+
+        for (i in 0..solution.sequence.size){
+            val (update) = neighbourhoodBrowser.browse(solution.sequence, solutionEvaluator)
+            deltaList.add(if (update.scoreDelta > 0) update.scoreDelta else 0.0)
+        }
+
+         return -deltaList.average() / ln(0.999)
+    }
+
     override fun mutate(solution: SolutionProposal, solutionEvaluator: SolutionEvaluator): SolutionProposal {
-        update(solution)
+        update(solution, solutionEvaluator)
         val (update) = neighbourhoodBrowser.browse(solution.sequence, solutionEvaluator).ifEmpty { return solution }
 
         if (isBetter(0.0, update.scoreDelta) || shouldAccept(update)) {
@@ -30,10 +44,10 @@ class SimulatedAnnealingMutator(
         return solution
     }
 
-    private fun update(solution: SolutionProposal) {
+    private fun update(solution: SolutionProposal, solutionEvaluator: SolutionEvaluator) {
         if (!::cooling.isInitialized)
             cooling = CoolingState(
-                    solution.score / solution.sequence.size,
+                    initializeTemperature(solution, solutionEvaluator),
                     0.999,
                     max(solution.sequence.size * solution.sequence.size, 1000),
                     2.0
@@ -41,9 +55,8 @@ class SimulatedAnnealingMutator(
         cooling.update()
     }
 
-    // we assume that delta will be positive... kinda bad but will see
     private fun shouldAccept(deltaUpdate: DeltaUpdate) =
-            exp(-deltaUpdate.scoreDelta / cooling.temperature) > random.nextDouble()
+            exp(-(if (deltaUpdate.scoreDelta > 0) deltaUpdate.scoreDelta else 0.0) / cooling.temperature) > random.nextDouble()
 
     override fun canMutate() = !::cooling.isInitialized || cooling.temperature > 0.001
 }
