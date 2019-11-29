@@ -70,10 +70,10 @@ fun main(args: Array<String>) = ProgramExecutor {
 //                "Steepest-ZeroNBStart-HeuristicInit" to { r -> steepestLsH(stBrowser, weightMatrix, r, isBetter) },
 //                "Steepest-ContinuousNBStart-RandomInit" to { r -> steepestLs(statefulSteepest(), r, isBetter) },
 //                "Steepest-ContinuousNBStart-HeuristicInit" to { r -> steepestLsH(statefulSteepest(), weightMatrix, r, isBetter) },
-                "SimulatedAnnealing-RandomInit" to { r -> simulatedAnnealing(r, weightMatrix, r.mut()) },
-                "SimulatedAnnealing-HeuristicInit" to { r -> simulatedAnnealing(r, weightMatrix, nearest(weightMatrix, r)) }
-//                "TabuSearch-RandomInit" to { r -> tabuSearch(instance.size, rankerBrowser, r, isBetter, r.mut())},
-//                "TabuSearch-HeuristicInit" to { r -> tabuSearch(instance.size, rankerBrowser, r, isBetter, nearest(weightMatrix, r))}
+                "SimulatedAnnealing-RandomInit" to { r -> simulatedAnnealing(r, isBetter, r.mut(), instance.size) },
+                "SimulatedAnnealing-HeuristicInit" to { r -> simulatedAnnealing(r,  isBetter, nearest(weightMatrix, r), instance.size) }
+//                "TabuSearch-RandomInit" to { r -> tabuSearch(instance.size, rankerBrowser, isBetter, r.mut())},
+//                "TabuSearch-HeuristicInit" to { r -> tabuSearch(instance.size, rankerBrowser, isBetter, nearest(weightMatrix, r))}
         ).forEach { (mutatorName, mutatorFactory) ->
             val random = Random(randomSeed)
             val collectedResults = mutableListOf<Pair<SolutionProposal, Progress>>()
@@ -88,8 +88,9 @@ fun main(args: Array<String>) = ProgramExecutor {
     }
 }.main(args)
 
-fun Params.tabuSearch(instanceSize: Int, browser: NeighbourhoodBrowser, r: Random, better: SolutionComparator, initial: SolutionMutator) =
-        TabuSearchMutator(browser, instanceSize, (tabuRatio * instanceSize).roundToInt(), LOWER_SOLUTION_VALUE) prependWith initial to notImprovingSC(better, notImprovingSolutions)
+fun Params.tabuSearch(instanceSize: Int, browser: NeighbourhoodBrowser, better: SolutionComparator, initial: SolutionMutator) =
+        TabuSearchMutator(browser, instanceSize, (tabuRatio * instanceSize).roundToInt(), LOWER_SOLUTION_VALUE) prependWith initial to
+                notImprovingSC(better, notImprovingSolutionsRatio inInstanceSize instanceSize)
 
 private fun statefulGreedy() = stateful { GreedyNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }
 private fun statefulSteepest() = stateful { SteepestNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }
@@ -100,8 +101,11 @@ private inline fun stateful(f: ((Int) -> Int) -> NeighbourhoodBrowser): Stateful
     return browser
 }
 
-private fun simulatedAnnealing(random: Random, weightMatrix: SymmetricWeightMatrix, initial: SolutionMutator) =
-        SimulatedAnnealingMutator(RandomNeighbourhoodBrowser(random), random, LOWER_SOLUTION_VALUE) prependWith initial to endlessSolutions()
+private infix fun Double.inInstanceSize(size: Int) = (this * size * size).roundToInt()
+
+private fun Params.simulatedAnnealing(random: Random, better: SolutionComparator, initial: SolutionMutator, instanceSize: Int) =
+        SimulatedAnnealingMutator(RandomNeighbourhoodBrowser(random), random, LOWER_SOLUTION_VALUE) prependWith initial to
+                notImprovingSC(better,  notImprovingSolutionsRatio inInstanceSize instanceSize)
 
 private fun randomMut(random: Random, instance: Instance) =
         RandomMutator(random, instance.size * instance.size / 3) to endlessSolutions()

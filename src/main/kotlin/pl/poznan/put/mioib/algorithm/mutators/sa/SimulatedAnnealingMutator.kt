@@ -58,7 +58,7 @@ class SimulatedAnnealingMutator(
     private fun shouldAccept(deltaUpdate: DeltaUpdate) =
             exp(-(if (deltaUpdate.scoreDelta > 0) deltaUpdate.scoreDelta else 0.0) / cooling.temperature) > random.nextDouble()
 
-    override fun canMutate() = !::cooling.isInitialized || cooling.temperature > 0.001
+    override fun canMutate() = true
 }
 
 data class CoolingState(
