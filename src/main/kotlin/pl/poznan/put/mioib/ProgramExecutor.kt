@@ -23,9 +23,9 @@ class ProgramExecutor(private val task: Params.() -> Unit) : CliktCommand() {
     private val solutionsToCollect by option(help = "number of solutions to collect").int().default(300)
     private val showProgress by option(help = "should show progress").default("false")
     private val tabuRatio by option(help = "ratio (based on instance size) of tabu list")
-            .double().default(0.1).validate { it > 0 }
+            .double().default(0.45).validate { it > 0 }
     private val tabuUpdate by option(help = "size (based on instance size) of ranked updates")
-            .double().default(0.1).validate { it > 0 }
+            .double().default(0.45).validate { it > 0 }
 
     override fun run() {
         Params(
