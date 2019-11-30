@@ -19,7 +19,8 @@ import kotlin.random.Random
 class SimulatedAnnealingMutator(
         private val neighbourhoodBrowser: NeighbourhoodBrowser,
         private val random: Random,
-        private val isBetter: SolutionValueComparator
+        private val isBetter: SolutionValueComparator,
+        private val increaseRatio: Double = 3.0
 ) : SolutionMutator {
     private lateinit var cooling: CoolingState
 
@@ -46,13 +47,15 @@ class SimulatedAnnealingMutator(
     }
 
     private fun update(solution: SolutionProposal, solutionEvaluator: SolutionEvaluator) {
-        if (!::cooling.isInitialized)
+        if (!::cooling.isInitialized) {
+            val coolingRatio = 0.9997
             cooling = CoolingState(
                     initializeTemperature(solution, solutionEvaluator),
-                    0.9997,
+                    coolingRatio,
                     max(solution.sequence.size * solution.sequence.size * 2, 1000),
-                    3.0
+                    increaseRatio
             )
+        }
         cooling.update()
     }
 

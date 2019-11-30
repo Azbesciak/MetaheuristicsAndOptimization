@@ -71,8 +71,11 @@ fun main(args: Array<String>) = ProgramExecutor {
 //                "Steepest-ZeroNBStart-HeuristicInit" to { r -> steepestLsH(stBrowser, weightMatrix, r, isBetter) },
 //                "Steepest-ContinuousNBStart-RandomInit" to { r -> steepestLs(statefulSteepest(), r, isBetter) },
 //                "Steepest-ContinuousNBStart-HeuristicInit" to { r -> steepestLsH(statefulSteepest(), weightMatrix, r, isBetter) },
-//                "SimulatedAnnealing-RandomInit" to { r -> simulatedAnnealing(r, isBetter, r.mut(), instance.size) },
-//                "SimulatedAnnealing-HeuristicInit" to { r -> simulatedAnnealing(r,  isBetter, nearest(weightMatrix, r), instance.size) },
+                "SimulatedAnnealing-RandomInit_increaseRatio3" to { r -> simulatedAnnealing(r, isBetter, r.mut(), instance.size, 3.0) },
+                "SimulatedAnnealing-HeuristicInit_increaseRatio4" to { r -> simulatedAnnealing(r,  isBetter, nearest(weightMatrix, r), instance.size,4.0) },
+                "SimulatedAnnealing-HeuristicInit_increaseRatio3" to { r -> simulatedAnnealing(r,  isBetter, nearest(weightMatrix, r), instance.size,3.0) },
+                "SimulatedAnnealing-HeuristicInit_increaseRatio2" to { r -> simulatedAnnealing(r,  isBetter, nearest(weightMatrix, r), instance.size,2.0) },
+                "SimulatedAnnealing-HeuristicInit_increaseRatio1" to { r -> simulatedAnnealing(r,  isBetter, nearest(weightMatrix, r), instance.size,1.0) },
                 "TabuSearch-RandomInit" to { r -> tabuSearch(instance.size, rankerBrowser, isBetter, r.mut(), false)},
                 "TabuSearch-HeuristicInit" to { r -> tabuSearch(instance.size, rankerBrowser, isBetter, nearest(weightMatrix, r), false)},
                 "TabuSearch-HeuristicInit-BreakTabu" to { r -> tabuSearch(instance.size, rankerBrowser, isBetter, nearest(weightMatrix, r), true)},
@@ -110,8 +113,8 @@ private inline fun stateful(f: ((Int) -> Int) -> NeighbourhoodBrowser): Stateful
 
 private infix fun Double.inInstanceSize(size: Int) = (this * size * size).roundToInt()
 
-private fun Params.simulatedAnnealing(random: Random, better: SolutionComparator, initial: SolutionMutator, instanceSize: Int) =
-        SimulatedAnnealingMutator(RandomNeighbourhoodBrowser(random), random, LOWER_SOLUTION_VALUE) prependWith initial to
+private fun Params.simulatedAnnealing(random: Random, better: SolutionComparator, initial: SolutionMutator, instanceSize: Int, increaseRatio: Double) =
+        SimulatedAnnealingMutator(RandomNeighbourhoodBrowser(random), random, LOWER_SOLUTION_VALUE, increaseRatio) prependWith initial to
                 notImprovingSC(better,  notImprovingSolutionsRatio inInstanceSize instanceSize)
 
 private fun randomMut(random: Random, instance: Instance) =
