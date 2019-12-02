@@ -27,6 +27,7 @@ import pl.poznan.put.mioib.report.Attempt
 import pl.poznan.put.mioib.report.Score
 import pl.poznan.put.mioib.report.Summary
 import pl.poznan.put.mioib.solver.Solver
+import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -72,10 +73,10 @@ fun main(args: Array<String>) = ProgramExecutor {
 //                "Steepest-ContinuousNBStart-RandomInit" to { r -> steepestLs(statefulSteepest(), r, isBetter) },
 //                "Steepest-ContinuousNBStart-HeuristicInit" to { r -> steepestLsH(statefulSteepest(), weightMatrix, r, isBetter) },
                 "SimulatedAnnealing-RandomInit_increaseRatio3" to { r -> simulatedAnnealing(r, isBetter, r.mut(), instance.size, 3.0) },
-                "SimulatedAnnealing-HeuristicInit_increaseRatio4" to { r -> simulatedAnnealing(r,  isBetter, nearest(weightMatrix, r), instance.size,4.0) },
-                "SimulatedAnnealing-HeuristicInit_increaseRatio3" to { r -> simulatedAnnealing(r,  isBetter, nearest(weightMatrix, r), instance.size,3.0) },
-                "SimulatedAnnealing-HeuristicInit_increaseRatio2" to { r -> simulatedAnnealing(r,  isBetter, nearest(weightMatrix, r), instance.size,2.0) },
-                "SimulatedAnnealing-HeuristicInit_increaseRatio1" to { r -> simulatedAnnealing(r,  isBetter, nearest(weightMatrix, r), instance.size,1.0) },
+                "SimulatedAnnealing-HeuristicInit_increaseRatio4" to { r -> simulatedAnnealing(r, isBetter, nearest(weightMatrix, r), instance.size, 4.0) },
+                "SimulatedAnnealing-HeuristicInit_increaseRatio3" to { r -> simulatedAnnealing(r, isBetter, nearest(weightMatrix, r), instance.size, 3.0) },
+                "SimulatedAnnealing-HeuristicInit_increaseRatio2" to { r -> simulatedAnnealing(r, isBetter, nearest(weightMatrix, r), instance.size, 2.0) },
+                "SimulatedAnnealing-HeuristicInit_increaseRatio1" to { r -> simulatedAnnealing(r, isBetter, nearest(weightMatrix, r), instance.size, 1.0) },
                 "TabuSearch-RandomInit" to { r -> tabuSearch(instance.size, rankerBrowser, isBetter, r.mut(), false)},
                 "TabuSearch-HeuristicInit" to { r -> tabuSearch(instance.size, rankerBrowser, isBetter, nearest(weightMatrix, r), false)},
                 "TabuSearch-HeuristicInit-BreakTabu" to { r -> tabuSearch(instance.size, rankerBrowser, isBetter, nearest(weightMatrix, r), true)},
@@ -91,7 +92,7 @@ fun main(args: Array<String>) = ProgramExecutor {
                     collectedResults += result
             }
             notifyResult(collectedResults, printer, it, averageTime, mutatorName)
-        }          
+        }
     }
 }.main(args)
 
@@ -100,7 +101,7 @@ fun Params.tabuSearch(instanceSize: Int, browser: NeighbourhoodBrowser, better: 
                 tabuRatio inInstanceSize instanceSize,
                 LOWER_SOLUTION_VALUE, Double.POSITIVE_INFINITY, breakTabu
         ) prependWith initial to
-                notImprovingSC(better, 1000)
+                notImprovingSC(better, notImprovingSolutionsRatio inInstanceSize instanceSize)
 
 private fun statefulGreedy() = stateful { GreedyNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }
 private fun statefulSteepest() = stateful { SteepestNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }
@@ -111,11 +112,14 @@ private inline fun stateful(f: ((Int) -> Int) -> NeighbourhoodBrowser): Stateful
     return browser
 }
 
-private infix fun Double.inInstanceSize(size: Int) = (this * size * size).roundToInt()
+private infix fun Double.inInstanceSize(size: Int) = max((this * size * size).roundToInt(), 1)
 
 private fun Params.simulatedAnnealing(random: Random, better: SolutionComparator, initial: SolutionMutator, instanceSize: Int, increaseRatio: Double) =
-        SimulatedAnnealingMutator(RandomNeighbourhoodBrowser(random), random, LOWER_SOLUTION_VALUE, increaseRatio) prependWith initial to
-                notImprovingSC(better,  1000)
+        SimulatedAnnealingMutator(
+                RandomNeighbourhoodBrowser(random), random,
+                LOWER_SOLUTION_VALUE, increaseRatio,
+                saLoopRatio inInstanceSize instanceSize
+        ) prependWith initial to notImprovingSC(better, notImprovingSolutionsRatio inInstanceSize instanceSize)
 
 private fun randomMut(random: Random, instance: Instance) =
         RandomMutator(random, instance.size * instance.size / 3) to endlessSolutions()
