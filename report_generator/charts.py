@@ -22,7 +22,9 @@ ALG_MARKERS = {
     "Greedy": MarkerSpec("s", "blue"),
     "Steepest": MarkerSpec("o", "orange"),
     "Heuristic": MarkerSpec("*", "green"),
-    "Random": MarkerSpec("p", "red")
+    "Random": MarkerSpec("p", "red"),
+    "TabuSearch": MarkerSpec("x", "purple"),
+    "SimulatedAnnealing": MarkerSpec("D", "brown")
 }
 
 
@@ -283,7 +285,7 @@ class CompareChart(DefaultChart):
                 self.originals = [x[alg]['score']['original'] for x in self.json_data.values()]
                 self.attempts = [x[alg]['attempts'] for x in self.json_data.values()]
                 self.times = [x[alg]['averageTime'] for x in self.json_data.values()]
-                self.marker=ALG_MARKERS.get(alg, MarkerSpec(MARKERS[i%len(MARKERS)], None))
+                self.marker=ALG_MARKERS.get(self.get_mapped_alg_name(alg), MarkerSpec(MARKERS[i%len(MARKERS)], None))
 
                 if self.ctype in ([CType.AVG, CType.MAX, CType.MIN]): 
                     self.__plot_scores(alg, positions)

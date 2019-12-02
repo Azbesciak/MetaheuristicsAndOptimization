@@ -20,7 +20,8 @@ class SimulatedAnnealingMutator(
         private val neighbourhoodBrowser: NeighbourhoodBrowser,
         private val random: Random,
         private val isBetter: SolutionValueComparator,
-        private val increaseRatio: Double = 3.0
+        private val increaseRatio: Double = 3.0,
+        private val loopRatio: Double = 0.0
 ) : SolutionMutator {
     private lateinit var cooling: CoolingState
 
@@ -37,13 +38,16 @@ class SimulatedAnnealingMutator(
     }
 
     override fun mutate(solution: SolutionProposal, solutionEvaluator: SolutionEvaluator): SolutionProposal {
-        update(solution, solutionEvaluator)
-        val (update) = neighbourhoodBrowser.browse(solution.sequence, solutionEvaluator).ifEmpty { return solution }
+        var s = solution
+        for (i in 0..(1 + s.sequence.size * loopRatio).toInt()) {
+            update(s, solutionEvaluator)
+            val (update) = neighbourhoodBrowser.browse(s.sequence, solutionEvaluator).ifEmpty { return solution }
 
-        if (isBetter(0.0, update.scoreDelta) || shouldAccept(update)) {
-            return solution updatedWith update
+            if (isBetter(0.0, update.scoreDelta) || shouldAccept(update)) {
+                s = s updatedWith update
+            }
         }
-        return solution
+        return s
     }
 
     private fun update(solution: SolutionProposal, solutionEvaluator: SolutionEvaluator) {

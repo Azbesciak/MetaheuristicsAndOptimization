@@ -100,7 +100,7 @@ fun Params.tabuSearch(instanceSize: Int, browser: NeighbourhoodBrowser, better: 
                 tabuRatio inInstanceSize instanceSize,
                 LOWER_SOLUTION_VALUE, Double.POSITIVE_INFINITY, breakTabu
         ) prependWith initial to
-                notImprovingSC(better, notImprovingSolutionsRatio inInstanceSize instanceSize)
+                notImprovingSC(better, 1000)
 
 private fun statefulGreedy() = stateful { GreedyNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }
 private fun statefulSteepest() = stateful { SteepestNeighbourhoodBrowser(0.0, it, LOWER_SOLUTION_VALUE) }
@@ -115,7 +115,7 @@ private infix fun Double.inInstanceSize(size: Int) = (this * size * size).roundT
 
 private fun Params.simulatedAnnealing(random: Random, better: SolutionComparator, initial: SolutionMutator, instanceSize: Int, increaseRatio: Double) =
         SimulatedAnnealingMutator(RandomNeighbourhoodBrowser(random), random, LOWER_SOLUTION_VALUE, increaseRatio) prependWith initial to
-                notImprovingSC(better,  notImprovingSolutionsRatio inInstanceSize instanceSize)
+                notImprovingSC(better,  1000)
 
 private fun randomMut(random: Random, instance: Instance) =
         RandomMutator(random, instance.size * instance.size / 3) to endlessSolutions()
